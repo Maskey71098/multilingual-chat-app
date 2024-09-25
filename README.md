@@ -1,3 +1,3 @@
 # multilingual-chat-app
 
-aapps
+This is a multilingual chat app created using react and firebase.
