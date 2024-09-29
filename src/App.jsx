@@ -1,6 +1,9 @@
+import UserList from "./components/userList/userList"
 const App = () => {
   return (
-    <div className=''>App</div>
+    <div className=''>
+      <UserList/>
+    </div>
   )
 }
 
