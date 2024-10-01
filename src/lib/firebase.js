@@ -9,7 +9,7 @@ import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_API_KEY,
+  apiKey: "AIzaSyDfvSJs3LO_gmDmEcT99AocqrcIFd5VPRw",
   authDomain: "bug-busters-firebase.firebaseapp.com",
   projectId: "bug-busters-firebase",
   storageBucket: "bug-busters-firebase.appspot.com",
@@ -17,9 +17,10 @@ const firebaseConfig = {
   appId: "1:117598043015:web:07d5ffedc99b53d6013122"
 };
 
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-export const auth = getAuth()
+export const auth = getAuth(app)
 export const db = getFirestore()
 export const storage = getStorage()
