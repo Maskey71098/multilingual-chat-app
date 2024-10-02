@@ -5,10 +5,15 @@ import Row from "react-bootstrap/Row";
 import "./signup.css";
 import * as formik from "formik";
 import * as yup from "yup";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../lib/firebase";
 
 export const Signup = () => {
   const { Formik } = formik;
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
+// Form validation scheme
   const schema = yup.object().shape({
     username: yup.string().required("Username is required"),
     // file: yup.mixed().required(),
@@ -23,20 +28,39 @@ export const Signup = () => {
       ),
   });
 
-  const handleSubmit2 = (event) => {
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
+  //Handle form submission
+  const handleSignUp = async(values) => {
+    setError(null);
+    setSuccess(false);
+    try{
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
+      console.log("User signed up:",userCredential.user);
+      setSuccess(true);
+    } catch(err) {
+      console.error("Signup error:", err);
+      setError(err.message);
     }
-  };
+  }
+
+  // // const handleSubmit2 = (event) => {
+  // //   const form = event.currentTarget;
+  // //   if (form.checkValidity() === false) {
+  // //     event.preventDefault();
+  // //     event.stopPropagation();
+  // //   }
+  // // };
 
   return (
     <div className="signup-container">
       <h2>Create an Account</h2>
       <Formik
         validationSchema={schema}
-        onSubmit={console.log}
+        onSubmit={handleSignUp}
+        // onSubmit={console.log}
         initialValues={{
           username: "",
           email: "",
@@ -94,6 +118,10 @@ export const Signup = () => {
                 </Form.Control.Feedback>
               </Form.Group>
             </Row>
+
+            {error && <p style={{ color: "red" }}>{error}</p>}
+            {success && <p style={{ color: "green" }}>Signup successful!</p>}
+
             <Button variant="dark" type="submit">
               Sign Up
             </Button>
