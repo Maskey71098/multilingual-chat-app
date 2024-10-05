@@ -6,14 +6,15 @@ import "./signup.css";
 import * as formik from "formik";
 import * as yup from "yup";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../lib/firebase";
+import { auth, db } from "../../lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
 
 export const Signup = () => {
   const { Formik } = formik;
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-// Form validation scheme
+  // Form validation scheme
   const schema = yup.object().shape({
     username: yup.string().required("Username is required"),
     // file: yup.mixed().required(),
@@ -29,22 +30,35 @@ export const Signup = () => {
   });
 
   //Handle form submission
-  const handleSignUp = async(values) => {
+  const handleSignUp = async (values) => {
     setError(null);
     setSuccess(false);
-    try{
+    try {
+      const { username = "", email = "", password = "" } = values;
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        values.email,
-        values.password
+        email,
+        password
       );
-      console.log("User signed up:",userCredential.user);
+      console.log("User signed up:", userCredential.user);
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        username,
+        email,
+        //avatar: imgUrl,
+        id: userCredential.user.uid,
+        blocked: [],
+      });
+
+      await setDoc(doc(db, "userchats", userCredential.user.uid), {
+        chats: [],
+      });
+
       setSuccess(true);
-    } catch(err) {
+    } catch (err) {
       console.error("Signup error:", err);
       setError(err.message);
     }
-  }
+  };
 
   // // const handleSubmit2 = (event) => {
   // //   const form = event.currentTarget;
