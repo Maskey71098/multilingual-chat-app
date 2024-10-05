@@ -44,7 +44,8 @@ const Detail = () => {
              </div> 
                
             </div>
-               <button>Block User</button>
+            <button>Block User</button>
+            <button className="logout" onClick={()=>auth.signout()}>Logout</button>
         </div>
     );
 };

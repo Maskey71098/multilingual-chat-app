@@ -5,10 +5,10 @@ const App = () => {
   return (
     <div className='container'>
       <List/>
-      <Chat/>
-      <Detail/>
+      {chatId && <Chat/>}
+      {chatId && <Detail/>}
     </div>
   );
 }
 
-export default App
+export default App;
