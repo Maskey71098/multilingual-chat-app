@@ -1,5 +1,8 @@
 import { Login } from "./components/login/login";
 import { Signup } from "./components/signup/signup";
+import Chat from "./component/Chat/chat";
+import List from "./component/List/list";
+import Detail from "./component/Detail/Detail";
 //import UserList from "./components/userList/userList";
 
 const App = () => {
@@ -15,6 +18,11 @@ const App = () => {
         {/* <section>      
           <UserList/>
         </section> */}
+        {/* <div className="container">
+          <List />
+          <Chat />
+          <Detail />
+        </div> */}
       </div>
     </main>
   );
