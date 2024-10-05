@@ -75,7 +75,7 @@ export const Login = () => {
           </Form.Group>
         </Row>
         {error && <p style={{ color: "red" }}>{error}</p>}
-        {success && <p style={{ color: "green" }}>Signup successful!</p>}
+        {success && <p style={{ color: "green" }}>Login successful!</p>}
 
         <Button type="submit">Sign In</Button>
       </Form>
