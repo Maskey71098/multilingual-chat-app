@@ -1,13 +1,14 @@
 import { Login } from "./components/login/login";
 import { Signup } from "./components/signup/signup";
 import Chat from "./component/Chat/chat";
-import List from "./component/List/list";
 import Detail from "./component/Detail/Detail";
 import { useUserStore } from "./lib/userStore";
 import { useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./lib/firebase";
-//import UserList from "./components/userList/userList";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import List from "./component/List/List";
 
 const App = () => {
   const { currentUser, isLoading, fetchUserInfo } = useUserStore();
@@ -25,6 +26,7 @@ const App = () => {
   if (isLoading) return <div className="loading">Loading...</div>;
   return (
     <>
+      <ToastContainer position="top-right" />
       {currentUser ? (
         <main className="chat-container">
           <div className="container">
@@ -42,9 +44,6 @@ const App = () => {
             <section className="signup-section">
               <Signup />
             </section>
-            {/* <section>      
-          <UserList/>
-        </section> */}
           </div>
         </main>
       )}
