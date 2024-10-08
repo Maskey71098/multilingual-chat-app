@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import "./login.css";
 
+//Login template
 export const Login = () => {
   const [validated, setValidated] = useState(false);
 
