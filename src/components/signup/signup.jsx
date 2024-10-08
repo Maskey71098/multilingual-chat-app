@@ -6,7 +6,8 @@ import "./signup.css";
 import * as formik from "formik";
 import * as yup from "yup";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../lib/firebase";
+import { auth, storage } from "../../lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export const Signup = () => {
   const { Formik } = formik;
@@ -16,7 +17,6 @@ export const Signup = () => {
 // Form validation scheme
   const schema = yup.object().shape({
     username: yup.string().required("Username is required"),
-    // file: yup.mixed().required(),
     email: yup.string().email("Invalid email address").required("Required"),
     password: yup
       .string()
@@ -26,6 +26,15 @@ export const Signup = () => {
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/,
         "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character"
       ),
+      avatar: yup
+      .mixed()
+      .required("Avatar is required")
+      .test("fileSize", "File too large", (value) => {
+        return value && value.size <= 2000000; // Limit file size to 2MB
+      })
+      .test("fileType", "Unsupported file format", (value) => {
+        return value && ["image/jpeg", "image/png"].includes(value.type); // Accept JPG or PNG files
+      }),
   });
 
   //Handle form submission
@@ -33,26 +42,31 @@ export const Signup = () => {
     setError(null);
     setSuccess(false);
     try{
+      //Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         values.email,
         values.password
       );
+      const user = userCredential.user;
+      
+      // Upload avatar to Firebase Storage
+      const avatarFile = values.avatar; // Access the selected avatar file
+      const avatarRef = ref(storage, `avatars/${user.uid}`); // Create a storage reference for the avatar
+
+      await uploadBytes(avatarRef, avatarFile); // Upload the file
+
+      // Get the download URL of the uploaded avatar
+      const avatarURL = await getDownloadURL(avatarRef);
+
       console.log("User signed up:",userCredential.user);
+      console.log("Avatar URL:", avatarURL);
       setSuccess(true);
     } catch(err) {
       console.error("Signup error:", err);
       setError(err.message);
     }
   }
-
-  // // const handleSubmit2 = (event) => {
-  // //   const form = event.currentTarget;
-  // //   if (form.checkValidity() === false) {
-  // //     event.preventDefault();
-  // //     event.stopPropagation();
-  // //   }
-  // // };
 
   return (
     <div className="signup-container">
@@ -65,16 +79,17 @@ export const Signup = () => {
           username: "",
           email: "",
           password: "",
+          avatar: null,
         }}
       >
-        {({ handleSubmit, handleChange, values, touched, errors }) => (
+        {({ handleSubmit, handleChange, values, touched, errors, setFieldValue }) => (
           <Form noValidate onSubmit={handleSubmit} className="signup-form">
             <Row className="mb-3">
               <Form.Group md="3" controlId="validationFormik04">
                 <Form.Label>Username</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Jack"
+                  placeholder="Enter your name here"
                   name="username"
                   value={values.username}
                   onChange={handleChange}
@@ -90,7 +105,7 @@ export const Signup = () => {
                 <Form.Label>Email</Form.Label>
                 <Form.Control
                   type="email"
-                  placeholder="test@email.com"
+                  placeholder="your_email@email.com"
                   name="email"
                   value={values.email}
                   onChange={handleChange}
@@ -106,7 +121,7 @@ export const Signup = () => {
                 <Form.Label>Password</Form.Label>
                 <Form.Control
                   type="password"
-                  placeholder="***"
+                  placeholder="Enter your password"
                   name="password"
                   value={values.password}
                   onChange={handleChange}
@@ -115,6 +130,23 @@ export const Signup = () => {
 
                 <Form.Control.Feedback type="invalid">
                   {errors.password}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Row>
+
+            <Row className="mb-3">
+              <Form.Group controlId="validationFormik08">
+                <Form.Label>Avatar</Form.Label>
+                <Form.Control
+                  type="file"
+                  name="avatar"
+                  onChange={(event) => {
+                    setFieldValue("avatar", event.currentTarget.files[0]); // Update avatar in Formik values
+                  }}
+                  isInvalid={!!errors.avatar}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.avatar}
                 </Form.Control.Feedback>
               </Form.Group>
             </Row>
