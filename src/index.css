@@ -1,3 +1,6 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -29,4 +32,23 @@ body{
   font-size: 36px;
   border-radius: 10px;
   background-color: rgba(17, 25, 40, 0.9);
+}
+
+.body-wrapper{
+  background-image: url('/public/Auth.jpg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position-x: -20vw;
+}
+
+.auth-container{
+  padding: 3em;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 100vh;
+}
+
+.signup-section ,.login-section{
+ flex-basis:30%
 }
