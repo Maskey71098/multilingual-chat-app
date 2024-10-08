@@ -1,14 +1,14 @@
 import { Login } from "./components/login/login";
 import { Signup } from "./components/signup/signup";
-import Chat from "./component/Chat/chat";
-import Detail from "./component/Detail/Detail";
+import Chat from "./components/Chat/Chat";
+import Detail from "./components/Detail/Detail";
 import { useUserStore } from "./lib/userStore";
 import { useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./lib/firebase";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import List from "./component/List/List";
+import List from "./components/List/List";
 
 const App = () => {
   const { currentUser, isLoading, fetchUserInfo } = useUserStore();

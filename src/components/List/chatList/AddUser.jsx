@@ -22,16 +22,18 @@ const AddUser = ({ show, handleClose }) => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    // const username = formData.get("username");
-    // const formData = new FormData(e.target);
+    const formData = new FormData(e.target);
+    const username = formData.get("username");
 
     try {
       const userRef = collection(db, "users");
+      console.log("users", userRef);
 
-      const q = query(userRef, where("username", "==", search));
+      const q = query(userRef, where("username", "==", username));
+      console.log(q);
 
       const querySnapShot = await getDocs(q);
-
+      console.log(querySnapShot);
       if (!querySnapShot.empty) {
         setUser(querySnapShot.docs[0].data());
       } else {
