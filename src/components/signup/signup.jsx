@@ -6,7 +6,8 @@ import "./signup.css";
 import * as formik from "formik";
 import * as yup from "yup";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, storage } from "../../lib/firebase";
+import { auth, db, storage } from "../../lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export const Signup = () => {
@@ -14,7 +15,7 @@ export const Signup = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-// Form validation scheme
+  // Form validation scheme
   const schema = yup.object().shape({
     username: yup.string().required("Username is required"),
     email: yup.string().email("Invalid email address").required("Required"),
@@ -26,7 +27,7 @@ export const Signup = () => {
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/,
         "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character"
       ),
-      avatar: yup
+    avatar: yup
       .mixed()
       .required("Avatar is required")
       .test("fileSize", "File too large", (value) => {
@@ -38,20 +39,21 @@ export const Signup = () => {
   });
 
   //Handle form submission
-  const handleSignUp = async(values) => {
+  const handleSignUp = async (values) => {
     setError(null);
     setSuccess(false);
-    try{
+    try {
+      const { username = "", email = "", password = "", avatar = "" } = values;
       //Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        values.email,
-        values.password
+        email,
+        password
       );
       const user = userCredential.user;
-      
+
       // Upload avatar to Firebase Storage
-      const avatarFile = values.avatar; // Access the selected avatar file
+      const avatarFile = avatar; // Access the selected avatar file
       const avatarRef = ref(storage, `avatars/${user.uid}`); // Create a storage reference for the avatar
 
       await uploadBytes(avatarRef, avatarFile); // Upload the file
@@ -59,14 +61,27 @@ export const Signup = () => {
       // Get the download URL of the uploaded avatar
       const avatarURL = await getDownloadURL(avatarRef);
 
-      console.log("User signed up:",userCredential.user);
+      console.log("User signed up:", userCredential.user);
       console.log("Avatar URL:", avatarURL);
+      console.log("User signed up:", userCredential.user);
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        username,
+        email,
+        avatar: avatarURL,
+        id: userCredential.user.uid,
+        blocked: [],
+      });
+
+      await setDoc(doc(db, "userchats", userCredential.user.uid), {
+        chats: [],
+      });
+
       setSuccess(true);
-    } catch(err) {
+    } catch (err) {
       console.error("Signup error:", err);
       setError(err.message);
     }
-  }
+  };
 
   return (
     <div className="signup-container">
@@ -82,7 +97,14 @@ export const Signup = () => {
           avatar: null,
         }}
       >
-        {({ handleSubmit, handleChange, values, touched, errors, setFieldValue }) => (
+        {({
+          handleSubmit,
+          handleChange,
+          values,
+          touched,
+          errors,
+          setFieldValue,
+        }) => (
           <Form noValidate onSubmit={handleSubmit} className="signup-form">
             <Row className="mb-3">
               <Form.Group md="3" controlId="validationFormik04">

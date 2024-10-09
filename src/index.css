@@ -1,5 +1,5 @@
-@import 'bootstrap/dist/css/bootstrap.min.css';
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap");
 
 * {
   margin: 0;
@@ -9,14 +9,14 @@
     "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
 }
 
-.body-wrapper{
-  background-image: url('/public/Auth.jpg');
+.body-wrapper {
+  background-image: url("/public/Auth.jpg");
   background-size: contain;
   background-repeat: no-repeat;
   background-position-x: -20vw;
 }
 
-.auth-container{
+.auth-container {
   padding: 3em;
   display: flex;
   justify-content: space-around;
@@ -24,6 +24,29 @@
   height: 100vh;
 }
 
-.signup-section ,.login-section{
- flex-basis:30%
+.signup-section,
+.login-section {
+  flex-basis: 30%;
+}
+.chat-container {
+  background-image: url("/bgm.avif");
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: white;
+}
+.container {
+  width: 90vw;
+  height: 90vh;
+  background-color: rgba(17, 25, 40, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.125);
+  display: flex;
+}
+.fixed-icons {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
 }

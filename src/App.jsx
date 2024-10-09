@@ -1,18 +1,53 @@
 import { Login } from "./components/login/login";
 import { Signup } from "./components/signup/signup";
+import Chat from "./components/Chat/Chat";
+import Detail from "./components/Detail/Detail";
+import { useUserStore } from "./lib/userStore";
+import { useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./lib/firebase";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import List from "./components/List/List";
 
 const App = () => {
+  const { currentUser, isLoading, fetchUserInfo } = useUserStore();
+
+  useEffect(() => {
+    const unSub = onAuthStateChanged(auth, (user) => {
+      fetchUserInfo(user?.uid);
+    });
+
+    return () => {
+      unSub();
+    };
+  }, [fetchUserInfo]);
+
+  if (isLoading) return <div className="loading">Loading...</div>;
   return (
-    <main className="body-wrapper">
-      <div className="auth-container">
-        <section className="login-section">
-          <Login />
-        </section>
-        <section className="signup-section">
-          <Signup />
-        </section>
-      </div>
-    </main>
+    <>
+      <ToastContainer position="top-right" />
+      {currentUser ? (
+        <main className="chat-container">
+          <div className="container">
+            <List />
+            <Chat />
+            <Detail />
+          </div>
+        </main>
+      ) : (
+        <main className="body-wrapper">
+          <div className="auth-container">
+            <section className="login-section">
+              <Login />
+            </section>
+            <section className="signup-section">
+              <Signup />
+            </section>
+          </div>
+        </main>
+      )}
+    </>
   );
 };
 
