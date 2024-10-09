@@ -5,6 +5,7 @@ import Row from "react-bootstrap/Row";
 import "./login.css";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
+//Login template
 export const Login = () => {
   const [validated, setValidated] = useState(false);
   const auth = getAuth();
