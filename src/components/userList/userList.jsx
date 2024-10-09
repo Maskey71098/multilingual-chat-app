@@ -5,7 +5,7 @@ const UserList = ({ user }) => {
   return (
     <div className="userList">
       <div className="item">
-        <img src="./avatar.png" alt="" />
+        <img src={user?.user?.avatar || "./avatar.png"} />
         <div className="texts">
           <span>{user?.user?.username}</span>
           <p className="text-secondary">
