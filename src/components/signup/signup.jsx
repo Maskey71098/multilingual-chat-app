@@ -127,7 +127,7 @@ export const Signup = () => {
                 <Form.Label>Email</Form.Label>
                 <Form.Control
                   type="email"
-                  placeholder="your_email@email.com"
+                  placeholder="Enter your email here"
                   name="email"
                   value={values.email}
                   onChange={handleChange}
