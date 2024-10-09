@@ -33,12 +33,13 @@ import { initializeApp } from "firebase/app";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAj-DLaKTeD4xDpf-9jMetQ0EGH5K7IfLg",
-  authDomain: "chat-app-test-a94f5.firebaseapp.com",
-  projectId: "chat-app-test-a94f5",
-  storageBucket: "chat-app-test-a94f5.appspot.com",
-  messagingSenderId: "489217921371",
-  appId: "1:489217921371:web:994ab8e4e7dcd8a7fe8a7e",
+  apiKey: "AIzaSyDfvSJs3LO_gmDmEcT99AocqrcIFd5VPRw",
+  authDomain: "bug-busters-firebase.firebaseapp.com",
+  databaseURL: "https://bug-busters-firebase-default-rtdb.firebaseio.com",
+  projectId: "bug-busters-firebase",
+  storageBucket: "bug-busters-firebase.appspot.com",
+  messagingSenderId: "117598043015",
+  appId: "1:117598043015:web:07d5ffedc99b53d6013122",
 };
 
 // Initialize Firebase
