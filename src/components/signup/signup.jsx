@@ -67,7 +67,7 @@ export const Signup = () => {
       await setDoc(doc(db, "users", userCredential.user.uid), {
         username,
         email,
-        //avatar: imgUrl,
+        avatar: avatarURL,
         id: userCredential.user.uid,
         blocked: [],
       });
