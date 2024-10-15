@@ -15,7 +15,7 @@ export const Signup = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Form validation scheme
+  // Form validation schema
   const schema = yup.object().shape({
     username: yup.string().required("Username is required"),
     email: yup.string().email("Invalid email address").required("Required"),
@@ -38,13 +38,15 @@ export const Signup = () => {
       }),
   });
 
-  //Handle form submission
+  // Handle form submission
   const handleSignUp = async (values) => {
     setError(null);
     setSuccess(false);
+    console.log("Ok");
     try {
-      const { username = "", email = "", password = "", avatar = "" } = values;
-      //Create user with email and password
+      const { username, email, password } = values;
+
+      // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -64,16 +66,24 @@ export const Signup = () => {
       console.log("User signed up:", userCredential.user);
       console.log("Avatar URL:", avatarURL);
       console.log("User signed up:", userCredential.user);
-      await setDoc(doc(db, "users", userCredential.user.uid), {
-        username,
-        email,
-        avatar: avatarURL,
-        id: userCredential.user.uid,
-        blocked: [],
-      });
 
-      await setDoc(doc(db, "userchats", userCredential.user.uid), {
-        chats: [],
+      // Firestore transaction
+      await runTransaction(db, async (transaction) => {
+        // Create user document in "users" collection
+        const userDocRef = doc(db, "users", userCredential.user.uid);
+        transaction.set(userDocRef, {
+          username,
+          email,
+          id: userCredential.user.uid,
+          blocked: [],
+          friends: [],
+        });
+
+        // Create user chat document in "userchats" collection
+        const userChatsDocRef = doc(db, "userchats", userCredential.user.uid);
+        transaction.set(userChatsDocRef, {
+          chats: [],
+        });
       });
 
       setSuccess(true);
@@ -89,7 +99,6 @@ export const Signup = () => {
       <Formik
         validationSchema={schema}
         onSubmit={handleSignUp}
-        // onSubmit={console.log}
         initialValues={{
           username: "",
           email: "",

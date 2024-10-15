@@ -11,14 +11,16 @@ import {
 } from "firebase/firestore";
 import { useState } from "react";
 import { useUserStore } from "../../../lib/userStore";
-import { db } from "../../../lib/firebase";
+import { auth, db } from "../../../lib/firebase";
 import { Button, Form, Modal, Stack } from "react-bootstrap";
 import { toast } from "react-toastify";
+import useFriendsStore from "../../../lib/friendStore";
 
 const AddUser = ({ show, handleClose }) => {
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState("");
-  const { currentUser } = useUserStore();
+  const currentUser = auth.currentUser;
+  const { addFriend } = useFriendsStore();
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -41,6 +43,30 @@ const AddUser = ({ show, handleClose }) => {
       }
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  // Modified:
+
+  const newHandleAdd = async () => {
+
+    const friendId = user.id;
+
+    try {
+      // Make sure `currentUser` exists
+      if (!currentUser) throw new Error("User not authenticated");
+
+      await addFriend(currentUser.uid, friendId);
+
+      // Show success message
+      toast.success(`Friend added successfully!`);
+    } catch (error) {
+      console.error("Error adding friend:", error);
+
+      // Show error message
+      toast.error(`Failed to add friend: ${error.message}`, {
+        position: toast.POSITION.TOP_RIGHT,
+      });
     }
   };
 
@@ -107,7 +133,7 @@ const AddUser = ({ show, handleClose }) => {
               <img src={user.avatar || "./avatar.png"} alt="" />
               <span>{user.username}</span>
             </Stack>
-            <Button onClick={handleAdd}>Add User</Button>
+            <Button onClick={newHandleAdd}>Add User</Button>
           </Stack>
         )}
       </Modal.Body>
