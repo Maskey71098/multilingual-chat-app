@@ -6,6 +6,7 @@ import "./login.css";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useUserStore } from "../../lib/userStore";
 
+//Login template
 export const Login = () => {
   const [validated, setValidated] = useState(false);
   const auth = getAuth();
