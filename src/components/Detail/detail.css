@@ -16,6 +16,15 @@
         object-fit: cover;
       }
     }
+    .logout{
+        align-self: flex-end;
+        background-color: maroon;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
     .info{
         padding: 20px;
         display: flex;
@@ -80,13 +89,17 @@
                 }
             }    
         } 
-        button{
+        .Block-User{
+                align-self: flex-end;
                 padding: 10px 20px;
-                background-color: maroon;
+                background-color: darkred;
                 color: white;
                 border: none;
-                border-radius: 5px;
+                border-radius: 10px;
                 cursor: pointer;
+                margin: 20px;
+                align-self: center;
+                
             }
      }
         

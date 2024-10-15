@@ -1,10 +1,14 @@
-import { doc, getDoc } from "firebase/firestore";
 import { create } from "zustand";
-import { db } from "./firebase";
+import { db } from "./firebase"; // Make sure to adjust the import according to your file structure
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { IsBlocked } from "./friendStore";
 
 export const useUserStore = create((set) => ({
   currentUser: null,
   isLoading: true,
+
+  // Fetch user info based on UID
   fetchUserInfo: async (uid) => {
     if (!uid) return set({ currentUser: null, isLoading: false });
 
@@ -19,7 +23,10 @@ export const useUserStore = create((set) => ({
       }
     } catch (err) {
       console.log(err);
-      return set({ currentUser: null, isLoading: false });
+      set({ currentUser: null, isLoading: false });
     }
   },
+
+  // Function to set current user in the store
+  setUser: (user) => set({ currentUser: user, isLoading: false }),
 }));

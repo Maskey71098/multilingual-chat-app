@@ -9,13 +9,15 @@ import { auth } from "./lib/firebase";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import List from "./components/List/List";
+import useFriendsStore from "./lib/friendStore";
 
 const App = () => {
   const { currentUser, isLoading, fetchUserInfo } = useUserStore();
-
+  const { activeFriend, loadFriends } = useFriendsStore();
   useEffect(() => {
     const unSub = onAuthStateChanged(auth, (user) => {
       fetchUserInfo(user?.uid);
+      loadFriends(user?.uid);
     });
 
     return () => {
@@ -31,7 +33,7 @@ const App = () => {
         <main className="chat-container">
           <div className="container">
             <List />
-            <Chat />
+            <Chat friend={activeFriend} />
             <Detail />
           </div>
         </main>

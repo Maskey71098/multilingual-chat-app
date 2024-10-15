@@ -7,17 +7,16 @@ import * as formik from "formik";
 import * as yup from "yup";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, runTransaction } from "firebase/firestore";
 
 export const Signup = () => {
   const { Formik } = formik;
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Form validation scheme
+  // Form validation schema
   const schema = yup.object().shape({
     username: yup.string().required("Username is required"),
-    // file: yup.mixed().required(),
     email: yup.string().email("Invalid email address").required("Required"),
     password: yup
       .string()
@@ -29,28 +28,39 @@ export const Signup = () => {
       ),
   });
 
-  //Handle form submission
+  // Handle form submission
   const handleSignUp = async (values) => {
     setError(null);
     setSuccess(false);
+    console.log("Ok");
     try {
-      const { username = "", email = "", password = "" } = values;
+      const { username, email, password } = values;
+
+      // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
       console.log("User signed up:", userCredential.user);
-      await setDoc(doc(db, "users", userCredential.user.uid), {
-        username,
-        email,
-        //avatar: imgUrl,
-        id: userCredential.user.uid,
-        blocked: [],
-      });
 
-      await setDoc(doc(db, "userchats", userCredential.user.uid), {
-        chats: [],
+      // Firestore transaction
+      await runTransaction(db, async (transaction) => {
+        // Create user document in "users" collection
+        const userDocRef = doc(db, "users", userCredential.user.uid);
+        transaction.set(userDocRef, {
+          username,
+          email,
+          id: userCredential.user.uid,
+          blocked: [],
+          friends: [],
+        });
+
+        // Create user chat document in "userchats" collection
+        const userChatsDocRef = doc(db, "userchats", userCredential.user.uid);
+        transaction.set(userChatsDocRef, {
+          chats: [],
+        });
       });
 
       setSuccess(true);
@@ -60,21 +70,12 @@ export const Signup = () => {
     }
   };
 
-  // // const handleSubmit2 = (event) => {
-  // //   const form = event.currentTarget;
-  // //   if (form.checkValidity() === false) {
-  // //     event.preventDefault();
-  // //     event.stopPropagation();
-  // //   }
-  // // };
-
   return (
     <div className="signup-container">
       <h2>Create an Account</h2>
       <Formik
         validationSchema={schema}
         onSubmit={handleSignUp}
-        // onSubmit={console.log}
         initialValues={{
           username: "",
           email: "",

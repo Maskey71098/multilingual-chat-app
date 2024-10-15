@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import "./login.css";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { useUserStore } from "../../lib/userStore";
 
 export const Login = () => {
   const [validated, setValidated] = useState(false);
@@ -29,7 +30,8 @@ export const Login = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
-        const user = userCredential.user;
+        
+
         setSuccess(true);
       })
       .catch((error) => {
