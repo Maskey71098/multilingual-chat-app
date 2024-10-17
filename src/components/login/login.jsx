@@ -4,12 +4,13 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import "./login.css";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { useSession } from "../../lib/useSession";
 
 //Login template
 export const Login = () => {
   const [validated, setValidated] = useState(false);
   const auth = getAuth();
-
+  const { addToActiveSession } = useSession();
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
@@ -30,7 +31,11 @@ export const Login = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
+        
+
         const user = userCredential.user;
+        localStorage.removeItem("userID");
+        addToActiveSession();
         setSuccess(true);
       })
       .catch((error) => {
