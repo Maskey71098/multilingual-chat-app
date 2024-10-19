@@ -3,7 +3,7 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import "./login.css";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { useSession } from "../../lib/useSession";
 
 //Login template
@@ -42,6 +42,19 @@ export const Login = () => {
         setError("Invalid credentials!! Try again");
       });
   };
+
+  // Forgot Password Implementation
+  // const handleResetPassword = () => {
+  //   setResetError(null);
+  //   setResetSuccess(null);
+  //   sendPasswordResetEmail(auth, resetEmail)
+  //     .then(() => {
+  //       setResetSuccess("Password reset email send! Check your inbox.");
+  //     })
+  //     .catch((error) => {
+  //       setResetError("Error sending reset email. Please try again !");
+  //     });
+  // };
 
   return (
     <div className="login-container">
@@ -84,6 +97,9 @@ export const Login = () => {
         {success && <p style={{ color: "green" }}>Login successful!</p>}
 
         <Button type="submit">Sign In</Button>
+
+      {/* Forgot Password Section - Amaskey */}
+      
       </Form>
     </div>
   );
