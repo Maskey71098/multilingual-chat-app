@@ -3,8 +3,15 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import "./login.css";
-import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import { 
+  getAuth, 
+  sendPasswordResetEmail, 
+  signInWithPopup,
+  signInWithEmailAndPassword,
+ } from "firebase/auth";
 import { useSession } from "../../lib/useSession";
+// Import Google Provider
+import { googleProvider } from "../../lib/firebase";
 
 //Login template
 export const Login = () => {
@@ -31,8 +38,6 @@ export const Login = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
-        
-
         const user = userCredential.user;
         localStorage.removeItem("userID");
         addToActiveSession();
@@ -41,6 +46,24 @@ export const Login = () => {
       .catch((error) => {
         setError("Invalid credentials!! Try again");
       });
+  };
+
+  // Google sign-in handler
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setSuccess(false);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      // Addng active session
+      localStorage.removeItem("userID");
+      addToActiveSession();
+      setSuccess(true);
+    } catch (error) {
+      setError("Google sign-in failed! : Please try again!");
+      console.error(error);
+    }
   };
 
   // Forgot Password Implementation
@@ -96,7 +119,12 @@ export const Login = () => {
         {error && <p style={{ color: "red" }}>{error}</p>}
         {success && <p style={{ color: "green" }}>Login successful!</p>}
 
-        <Button type="submit">Sign In</Button>
+        <Button variant = "dark" type="submit" className="me-2">Sign In</Button>
+
+        {/* Google Sign-In  */}
+        <Button variant = "primary" onClick={ handleGoogleSignIn }>
+          Sign In with Google
+        </Button>
 
       {/* Forgot Password Section - Amaskey */}
       
