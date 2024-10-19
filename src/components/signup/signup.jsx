@@ -7,7 +7,7 @@ import * as formik from "formik";
 import * as yup from "yup";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db, storage } from "../../lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, runTransaction } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export const Signup = () => {
@@ -44,7 +44,7 @@ export const Signup = () => {
     setSuccess(false);
     console.log("Ok");
     try {
-      const { username, email, password } = values;
+      const { username, email, password, avatar } = values;
 
       // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(
@@ -136,7 +136,7 @@ export const Signup = () => {
                 <Form.Label>Email</Form.Label>
                 <Form.Control
                   type="email"
-                  placeholder="your_email@email.com"
+                  placeholder="Enter your email here"
                   name="email"
                   value={values.email}
                   onChange={handleChange}
