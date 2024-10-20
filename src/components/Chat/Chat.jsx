@@ -40,6 +40,13 @@ const Chat = ({ friend }) => {
     setNewMessage(""); // Clear input field
   };
 
+  const handleScroll = (e) => {
+    let element = e.target;
+    if (element.scrollTop === 0) {
+      console.log("On Top");
+    }
+  };
+
   return friend ? (
     <div className="chat">
       <div className="top">
@@ -56,7 +63,7 @@ const Chat = ({ friend }) => {
           <img src="./info.png" alt="" />
         </div>
       </div>
-      <div className="center">
+      <div className="center" onScroll={handleScroll}>
         {messages.map((message, index) => (
           <div
             className={`message ${
@@ -84,7 +91,7 @@ const Chat = ({ friend }) => {
           <div className="icons">
             <img src="./mic.png" alt="Microphone" />
             <img src="/img.png" alt="Image" />
-            <img src="/images.png" alt="translate"/>
+            <img src="/images.png" alt="translate" />
           </div>
           <input
             type="text"
