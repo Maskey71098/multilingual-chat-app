@@ -44,7 +44,7 @@ export const Signup = () => {
     setSuccess(false);
     console.log("Ok");
     try {
-      const { username, email, password } = values;
+      const { username, email, password, avatar } = values;
 
       // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(

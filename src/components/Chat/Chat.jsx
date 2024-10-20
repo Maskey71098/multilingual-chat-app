@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from "react";
 import useChatStore from "../../lib/chatStore"; // Import Zustand store
 import "./chat.css";
+import EmojiPicker from "emoji-picker-react";
 
 import { auth } from "../../lib/firebase";
 import { IsBlocked } from "../../lib/friendStore";
 import { toast } from "react-toastify";
+import { First, Prev } from "react-bootstrap/esm/PageItem";
 
 const Chat = ({ friend }) => {
+  const [open, setOpen] = useState(false);
+
+  const handleEmoji = (e) => {
+    setNewMessage((Prev) => Prev + e.emoji);
+    setOpen(false)
+    
+  };
   const { messages, loadMessages, sendMessage } = useChatStore();
   const currentUser = auth.currentUser;
   const [newMessage, setNewMessage] = useState("");
@@ -82,7 +91,14 @@ const Chat = ({ friend }) => {
       >
         <div className="bottom">
           <div className="icons">
-            <img src="./mic.png" alt="Microphone" />
+            <div className="emoji">
+              <img src="./emoji.png" alt="Emoji"
+              onClick={() => setOpen((Prev) => !Prev)} 
+              />
+            <div className="picker">
+              <EmojiPicker open={open} onEmojiClick={handleEmoji}/>
+            </div>
+            </div>
             <img src="/img.png" alt="Image" />
             <img src="/images.png" alt="translate"/>
           </div>

@@ -18,7 +18,7 @@
     }
     .logout{
         align-self: flex-end;
-        background-color: maroon;
+        background-color: rgba(5, 5, 241, 0.608);
         color: white;
         padding: 10px 20px;
         border: none;
@@ -77,7 +77,6 @@
                         font-weight: 300;
                        }
                     }    
-                }
 
                 .icons{
                     width: 30px;
@@ -87,9 +86,11 @@
                     border-radius: 50%;
                     cursor: pointer;
                 }
-            }    
+            } 
+         }  
         } 
-        .Block-User{
+        
+        button{
                 align-self: flex-end;
                 padding: 10px 20px;
                 background-color: darkred;
@@ -99,9 +100,13 @@
                 cursor: pointer;
                 margin: 20px;
                 align-self: center;
+
+                &:hover{
+                    background-color: red(220, 20, 60, 0.796);
+                }
                 
-            }
-     }
+        }
+    }
         
 }
 
