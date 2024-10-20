@@ -3,11 +3,12 @@ import "./chatList.css";
 import AddUser from "./addUser";
 import { Form, Stack } from "react-bootstrap";
 
-const ChatList = () => {
+const ChatList = ({ setInput }) => {
   const [addUser, setAddUser] = useState(false);
   const handleAddClick = () => {
     setAddUser(!addUser);
   };
+
   return (
     <>
       <Stack
@@ -16,7 +17,12 @@ const ChatList = () => {
         gap={2}
       >
         <img src="/search.png" alt="" className="fixed-icons" />
-        <Form.Control type="text" placeholder="Search" name="Search" />{" "}
+        <Form.Control
+          type="text"
+          placeholder="Search"
+          name="Search"
+          onChange={(e) => setInput(e.target.value)}
+        />{" "}
         <img
           src="/plus.png"
           alt=""
