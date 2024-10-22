@@ -11,11 +11,12 @@ import {
 } from "firebase/firestore";
 
 // Define a Message type
-const createMessage = ({ senderId, receiverId, text, timestamp }) => ({
+const createMessage = ({ senderId, receiverId, text, timestamp,imageUrl }) => ({
   senderId, // The ID of the user sending the message
   receiverId, // The ID of the user receiving the message
   text, // The message content
   timestamp, // The time the message was sent
+  imageUrl // The image url sent
 });
 
 const useChatStore = create((set) => ({
@@ -56,7 +57,7 @@ const useChatStore = create((set) => ({
       const sortedMessages = messagesArray.sort(
         (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
       );
-
+      console.log(sortedMessages)
       set({ messages: sortedMessages });
     });
   },
@@ -66,8 +67,9 @@ const useChatStore = create((set) => ({
     set({ messages: [] });
   },
 
-  sendMessage: async (senderId, receiverId, text) => {
-    if (text.trim() === "") return;
+  sendMessage: async (senderId, receiverId, text,imageUrl) => {
+    if (text!==null && text.trim() === "") return;
+    console.log(imageUrl)
 
     const messagesRef = collection(database, "messages");
 
@@ -77,9 +79,9 @@ const useChatStore = create((set) => ({
         senderId,
         receiverId,
         text,
+        imageUrl,
         timestamp: new Date().toISOString(),
       });
-
       await addDoc(messagesRef, message);
       // Reset error state on successful message send
       set({ error: null });
@@ -92,3 +94,5 @@ const useChatStore = create((set) => ({
 }));
 
 export default useChatStore;
+
+

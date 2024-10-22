@@ -2,21 +2,22 @@ import React, { useEffect, useState } from "react";
 import useChatStore from "../../lib/chatStore"; // Import Zustand store
 import "./chat.css";
 import EmojiPicker from "emoji-picker-react";
-
-import { auth } from "../../lib/firebase";
+import { auth, storage } from "../../lib/firebase"; // Ensure Firebase Storage is imported
 import { IsBlocked } from "../../lib/friendStore";
 import { toast } from "react-toastify";
-import { First, Prev } from "react-bootstrap/esm/PageItem";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase Storage utilities
 
 const Chat = ({ friend }) => {
   const [open, setOpen] = useState(false);
+  const [image, setImage] = useState(null); // State to store selected image
+  const [uploading, setUploading] = useState(false); // State to show uploading status
 
   const handleEmoji = (e) => {
-    setNewMessage((Prev) => Prev + e.emoji);
-    setOpen(false)
-    
+    setNewMessage((prev) => prev + e.emoji);
+    setOpen(false);
   };
-  const { messages, loadMessages, sendMessage } = useChatStore();
+
+  const { messages, loadMessages, sendMessage } = useChatStore(); // Assume `sendMessage` can handle image URLs too
   const currentUser = auth.currentUser;
   const [newMessage, setNewMessage] = useState("");
 
@@ -27,26 +28,42 @@ const Chat = ({ friend }) => {
   }, [loadMessages, friend]);
 
   const handleSendMessage = async () => {
-    // Check if the current user has blocked the friend
     const userBlocked = await IsBlocked(currentUser.uid, friend.id);
-    // Check if the friend has blocked the current user
     const friendBlocked = await IsBlocked(friend.id, currentUser.uid);
 
     if (userBlocked) {
-      // user blocked friend
       toast.error("You need to unblock the user before sending a message.");
       return;
     } else if (friendBlocked) {
-      // friend blocked user
-      toast.error(
-        "You cannot send a message. You might be blocked by the other user."
-      );
+      toast.error("You cannot send a message. You might be blocked by the other user.");
       return;
     }
 
-    // Proceed to send the message
-    sendMessage(currentUser.uid, friend.id, newMessage); // Use Zustand action to send message
-    setNewMessage(""); // Clear input field
+    if (image) {
+      setUploading(true); // Set uploading to true while uploading the image
+      try {
+        const imageRef = ref(storage, `images/${currentUser.uid}/${image.name}`);
+        await uploadBytes(imageRef, image); // Upload image to Firebase Storage
+        const imageUrl = await getDownloadURL(imageRef); // Get the image URL after upload
+
+        sendMessage(currentUser.uid, friend.id, null, imageUrl); // Send message with image URL
+        setImage(null); // Clear the image input
+      } catch (error) {
+        toast.error("Image upload failed. Please try again.");
+      } finally {
+        setUploading(false); // Set uploading to false after completion
+      }
+    } else {
+      sendMessage(currentUser.uid, friend.id, newMessage); // Send text message
+      setNewMessage("");
+    }
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file); // Store selected image in state
+    }
   };
 
   return friend ? (
@@ -68,16 +85,16 @@ const Chat = ({ friend }) => {
       <div className="center">
         {messages.map((message, index) => (
           <div
-            className={`message ${
-              message.senderId === currentUser.uid ? "own" : ""
-            }`}
+            className={`message ${message.senderId === currentUser.uid ? "own" : ""}`}
             key={index}
           >
-            {message.senderId !== currentUser.uid && (
-              <img src="./avatar.png" alt="" />
-            )}
+            {message.senderId !== currentUser.uid && <img src="./avatar.png" alt="" />}
             <div className="texts">
-              <p>{message.text}</p>
+              {message.imageUrl ? (
+                <img src={message.imageUrl} alt="Sent" className="sent-image" />
+              ) : (
+                <p>{message.text}</p>
+              )}
               <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
             </div>
           </div>
@@ -85,37 +102,50 @@ const Chat = ({ friend }) => {
       </div>
       <form
         onSubmit={(e) => {
-          e.preventDefault(); // Prevent the form from refreshing the page
-          handleSendMessage(); // Call your send message function
+          e.preventDefault();
+          handleSendMessage();
         }}
       >
         <div className="bottom">
           <div className="icons">
             <div className="emoji">
-              <img src="./emoji.png" alt="Emoji"
-              onClick={() => setOpen((Prev) => !Prev)} 
+              <img
+                src="./emoji.png"
+                alt="Emoji"
+                onClick={() => setOpen((prev) => !prev)}
               />
-            <div className="picker">
-              <EmojiPicker open={open} onEmojiClick={handleEmoji}/>
+              <div className="picker">
+                <EmojiPicker open={open} onEmojiClick={handleEmoji} />
+              </div>
             </div>
-            </div>
-            <img src="/img.png" alt="Image" />
-            <img src="/images.png" alt="translate"/>
+            <label htmlFor="imageInput">
+              <img src="/img.png" alt="Image" />
+            </label>
+            <input
+              type="file"
+              id="imageInput"
+              style={{ display: "none" }}
+              accept="image/*"
+              onChange={handleImageUpload} // Handle image upload
+            />
           </div>
+          <img src="/images.png" alt="translate"/>
           <input
             type="text"
             placeholder="type a message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
+            disabled={uploading} // Disable input while uploading
           />
+          {image && <p>{image.name}</p>} {/* Display selected image name */}
         </div>
-        <button type="submit" className="sendButton">
-          Send
+        <button type="submit" className="sendButton" disabled={uploading}>
+          {uploading ? "Uploading..." : image ? "Send Image" : "Send"}
         </button>
       </form>
     </div>
   ) : (
-    <div> </div>
+    <div></div>
   );
 };
 
