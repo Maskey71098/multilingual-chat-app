@@ -5,9 +5,9 @@ import Row from "react-bootstrap/Row";
 import "./signup.css";
 import * as formik from "formik";
 import * as yup from "yup";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db, storage } from "../../lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, db, storage, googleProvider } from "../../lib/firebase";
+import { doc, setDoc, runTransaction } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export const Signup = () => {
@@ -93,6 +93,39 @@ export const Signup = () => {
     }
   };
 
+// Addition of Google Sign-In
+const handleGoogleSignup = async () => {
+  setError(null);
+  setSuccess(false);
+  try {
+    // Sign in with google
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    // Checking if the user is new or not
+    await runTransaction(db, async (transaction) => {
+      const userDocRef = doc(db, "users", user.uid);
+      transaction.set(userDocRef, {
+        username: user.displayName || "Anonymous",
+        email: user.email,
+        id: user.uid,
+        avatarURL: user.photoURL,
+        blocked : [],
+        friends: [],
+      });
+
+      const userChatsDocRef = doc(db, "userchats", user.uid);
+      transaction.set(userChatsDocRef, {
+        chats: [],
+      });
+    });
+
+  } catch(err) {
+    console.error("Google Sign-Up error:", err);
+    setError(err.message);
+  }
+};
+
   return (
     <div className="signup-container">
       <h2>Create an Account</h2>
@@ -136,7 +169,7 @@ export const Signup = () => {
                 <Form.Label>Email</Form.Label>
                 <Form.Control
                   type="email"
-                  placeholder="your_email@email.com"
+                  placeholder="Enter your email here"
                   name="email"
                   value={values.email}
                   onChange={handleChange}
@@ -185,8 +218,13 @@ export const Signup = () => {
             {error && <p style={{ color: "red" }}>{error}</p>}
             {success && <p style={{ color: "green" }}>Signup successful!</p>}
 
-            <Button variant="dark" type="submit">
-              Sign Up
+            <Button variant="dark" type="submit" className = "me-2">
+              Sign Up with Email
+            </Button>
+
+            {/* Google Sign-up option */}
+            <Button variant="primary" onClick={handleGoogleSignup}>
+              Sign Up with Google
             </Button>
           </Form>
         )}
