@@ -1,8 +1,16 @@
 .userInfo {
-  padding: 20px;
+  /* padding: 20px; */
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.userInfo h2 {
+  font-family: "Varela Round", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  margin: 0;
+  font-size: 1.5em;
 }
 
 .userInfo .user {
@@ -12,8 +20,8 @@
 }
 
 .userInfo .user img {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50px;
   object-fit: cover;
 }

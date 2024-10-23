@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import useChatStore from "../../lib/chatStore"; // Import Zustand store
 import "./chat.css";
 
+import { toast } from "react-toastify";
 import { auth } from "../../lib/firebase";
 import { IsBlocked } from "../../lib/friendStore";
-import { toast } from "react-toastify";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const Chat = ({ friend }) => {
   const { messages, loadInitialMessages, sendMessage, loadMoreMessages } =
@@ -88,9 +89,9 @@ const Chat = ({ friend }) => {
           </div>
         </div>
         <div className="icons">
-          <img src="./phone.png" alt="" />
-          <img src="./video.png" alt="" />
-          <img src="./info.png" alt="" />
+          <FontAwesomeIcon icon="fa-solid fa-phone" size="lg" />
+          <FontAwesomeIcon icon="fa-solid fa-video" size="lg" />
+          <FontAwesomeIcon icon="fa-solid fa-circle-info" size="lg" />
         </div>
       </div>
       {spinnerLoad && (
@@ -124,8 +125,8 @@ const Chat = ({ friend }) => {
       >
         <div className="bottom">
           <div className="icons">
-            <img src="./mic.png" alt="Microphone" />
-            <img src="/img.png" alt="Image" />
+            <FontAwesomeIcon icon="fa-solid fa-microphone" size="lg" />
+            <FontAwesomeIcon icon="fa-solid fa-image" size="lg" />
             <img src="/images.png" alt="translate" />
           </div>
           <input
@@ -134,10 +135,10 @@ const Chat = ({ friend }) => {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
           />
+          <button type="submit" className="sendButton">
+            Send
+          </button>
         </div>
-        <button type="submit" className="sendButton">
-          Send
-        </button>
       </form>
     </div>
   ) : (

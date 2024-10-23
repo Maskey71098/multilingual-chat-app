@@ -11,9 +11,33 @@ import "react-toastify/dist/ReactToastify.css";
 import List from "./components/List/List";
 import useFriendsStore from "./lib/friendStore";
 
+import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+  faMagnifyingGlass,
+  faPhone,
+  faVideoCamera,
+  faCircleInfo,
+  faMicrophone,
+  faImage,
+  faUserPen,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
+
 const App = () => {
   const { currentUser, isLoading, fetchUserInfo } = useUserStore();
   const { activeFriend, loadFriends } = useFriendsStore();
+
+  library.add(
+    faMagnifyingGlass,
+    faPhone,
+    faVideoCamera,
+    faCircleInfo,
+    faMicrophone,
+    faImage,
+    faUserPen,
+    faPlus
+  );
+
   useEffect(() => {
     const unSub = onAuthStateChanged(auth, (user) => {
       fetchUserInfo(user?.uid);
