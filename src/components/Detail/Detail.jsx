@@ -4,6 +4,7 @@ import useFriendsStore, { IsBlocked } from "../../lib/friendStore";
 import "./detail.css";
 import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
+import Button from "react-bootstrap/Button";
 
 const Detail = () => {
   const { activeFriend, blockUser, unblockUser } = useFriendsStore();
@@ -32,9 +33,7 @@ const Detail = () => {
       // Recheck the blocked status after toggling
       const blockedStatus = await IsBlocked(currentUser.uid, activeFriend.id);
       setIsBlocked(blockedStatus); // Update state after toggling
-      toast.success(
-        `User was ${!blockedStatus ? "unblocked" : "blocked"}.`
-      ); // Show a success toast
+      toast.success(`User was ${!blockedStatus ? "unblocked" : "blocked"}.`); // Show a success toast
     } catch (error) {
       toast.error("Some error occurred");
     }
@@ -70,28 +69,24 @@ const Detail = () => {
             <img src="./arrowDown.png" alt="" />
           </div>
           <div className="photos">
-            <div className="photoItems">
-             
-              
-            </div>
-          </div>
-        </div>
-        <div className="option">
-          <div className="title">
-            <span>Shares Files</span>
-            <img src="./arrowUp.png" alt="" />
-            <span> Chat Setting</span>
-            <img src="./arrowDown.png" alt="" />
+            <div className="photoItems"></div>
           </div>
         </div>
       </div>
 
-      <button onClick={handleBlockToggle}>
+      <Button
+        onClick={handleBlockToggle}
+        variant="dark"
+        size="sm"
+        style={{ marginBottom: "10px" }}
+      >
         {isBlocked ? "Unblock User" : "Block User"}
-      </button>
-      <button className="logout" onClick={handleLogout}>
+      </Button>
+      <br />
+
+      <Button variant="danger" size="sm" onClick={handleLogout}>
         Logout
-      </button>
+      </Button>
     </div>
   ) : (
     <div></div>
