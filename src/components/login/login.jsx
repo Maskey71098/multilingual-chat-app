@@ -20,6 +20,8 @@ export const Login = () => {
   const { addToActiveSession } = useSession();
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [resetEmail, setResetEmail] = useState(""); // State for forgot password email
+  const [resetMessage, setResetMessage] = useState(null); // State for reset message
 
   const handleSubmit = (event) => {
     const form = event.currentTarget;
@@ -66,18 +68,22 @@ export const Login = () => {
     }
   };
 
-  // Forgot Password Implementation
-  // const handleResetPassword = () => {
-  //   setResetError(null);
-  //   setResetSuccess(null);
-  //   sendPasswordResetEmail(auth, resetEmail)
-  //     .then(() => {
-  //       setResetSuccess("Password reset email send! Check your inbox.");
-  //     })
-  //     .catch((error) => {
-  //       setResetError("Error sending reset email. Please try again !");
-  //     });
-  // };
+  // Forgot Password 
+ const handleResetPassword = () => {
+  setError(null);
+  setResetMessage(null);
+  if (!resetEmail) {
+    setError("Please enter your email to reset your password.");
+    return;
+  }
+  sendPasswordResetEmail(auth, resetEmail)
+    .then(() => {
+      setResetMessage("Password reset email sent! Check your inbox.");
+    })
+    .catch(() => {
+      setError("Error sending reset email. Please try again.");
+    });
+ };
 
   return (
     <div className="login-container">
@@ -126,8 +132,23 @@ export const Login = () => {
           Sign In with Google
         </Button>
 
-      {/* Forgot Password Section - Amaskey */}
-      
+        <Row className="mb-3 mt-3">
+          <Form.Group controlId="resetEmail">
+            <Form.Label>Forgot Password? Enter Email to Reset</Form.Label>
+            <Form.Control
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              placeholder="Enter your email"
+              style={{ marginBottom: '10px' }}
+            />
+          </Form.Group>
+          <Button variant="dark" className = "mt-2" size = "sm" onClick={handleResetPassword}>
+            Forgot Password
+          </Button>
+        </Row>
+
+        {resetMessage && <p style={{ color: "green" }}>{resetMessage}</p>}
       </Form>
     </div>
   );
