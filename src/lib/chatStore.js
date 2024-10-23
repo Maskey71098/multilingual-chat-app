@@ -34,7 +34,6 @@ const useChatStore = create((set, get) => ({
     })),
 
   loadInitialMessages: (user, friend) => {
-    console.log(friend);
     const messagesRef = collection(database, "messages");
 
     // Create a query to fetch the first 5 messages where the user is either the sender or receiver
