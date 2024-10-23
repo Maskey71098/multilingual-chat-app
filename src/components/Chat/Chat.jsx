@@ -12,7 +12,7 @@ const Chat = ({ friend }) => {
   const currentUser = auth.currentUser;
   const [newMessage, setNewMessage] = useState("");
   const chatContainerRef = useRef(null);
-
+  const [spinnerLoad, setSpinnerLoad] = useState(false);
   const isLoadingMore = useRef(false);
 
   // Scroll to the bottom of the chat
@@ -61,7 +61,7 @@ const Chat = ({ friend }) => {
   const handleScroll = () => {
     if (chatContainerRef.current.scrollTop === 0) {
       isLoadingMore.current = true; // Indicate that more messages are being loaded
-
+      setSpinnerLoad(true);
       // Save the current scroll height before loading more messages
       const previousScrollHeight = chatContainerRef.current.scrollHeight;
       loadMoreMessages(currentUser, friend);
@@ -72,6 +72,7 @@ const Chat = ({ friend }) => {
         chatContainerRef.current.scrollTop =
           currentScrollHeight - previousScrollHeight;
         isLoadingMore.current = false; // Loading complete
+        setSpinnerLoad(false);
       }, 200); // Adjust timeout as needed
     }
   };
@@ -92,6 +93,11 @@ const Chat = ({ friend }) => {
           <img src="./info.png" alt="" />
         </div>
       </div>
+      {spinnerLoad && (
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border" role="status"></div>
+        </div>
+      )}
       <div className="center" ref={chatContainerRef} onScroll={handleScroll}>
         {messages.map((message, index) => (
           <div
