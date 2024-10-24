@@ -4,6 +4,7 @@ import useFriendsStore, { IsBlocked } from "../../lib/friendStore";
 import "./detail.css";
 import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
+import Button from "react-bootstrap/Button";
 
 const Detail = () => {
   const { activeFriend, blockUser, unblockUser } = useFriendsStore();
@@ -100,12 +101,19 @@ const Detail = () => {
         </div> */}
       </div>
 
-      <button onClick={handleBlockToggle}>
+      <Button
+        onClick={handleBlockToggle}
+        variant="dark"
+        size="sm"
+        style={{ marginBottom: "10px" }}
+      >
         {isBlocked ? "Unblock User" : "Block User"}
-      </button>
-      <button className="logout" onClick={handleLogout}>
+      </Button>
+      <br />
+
+      <Button variant="danger" size="sm" onClick={handleLogout}>
         Logout
-      </button>
+      </Button>
     </div>
   ) : (
     <div></div>
