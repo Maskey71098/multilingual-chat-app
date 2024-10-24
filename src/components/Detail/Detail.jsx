@@ -32,9 +32,7 @@ const Detail = () => {
       // Recheck the blocked status after toggling
       const blockedStatus = await IsBlocked(currentUser.uid, activeFriend.id);
       setIsBlocked(blockedStatus); // Update state after toggling
-      toast.success(
-        `User was ${!blockedStatus ? "unblocked" : "blocked"}.`
-      ); // Show a success toast
+      toast.success(`User was ${!blockedStatus ? "unblocked" : "blocked"}.`); // Show a success toast
     } catch (error) {
       toast.error("Some error occurred");
     }
@@ -70,20 +68,36 @@ const Detail = () => {
             <img src="./arrowDown.png" alt="" />
           </div>
           <div className="photos">
-            <div className="photoItems">
-             
-              
+            <div className="photoItem">
+              <div className="photoDetail">
+                <img
+                  src="https://images.pexels.com/photos/7381200/pexels-photo-7381200.jpeg?auto=compress&cs=tinysrgb&w=800&lazy=load"
+                  alt=""
+                />
+                <span>photo_2024_2.png</span>
+              </div>
+              <img src="./download.png" alt="" className="icon" />
+            </div>
+            <div className="photoItem">
+              <div className="photoDetail">
+                <img
+                  src="https://images.pexels.com/photos/7381200/pexels-photo-7381200.jpeg?auto=compress&cs=tinysrgb&w=800&lazy=load"
+                  alt=""
+                />
+                <span>photo_2024_2.png</span>
+              </div>
+              <img src="./download.png" alt="" className="icon" />
             </div>
           </div>
         </div>
-        <div className="option">
+        {/* <div className="option">
           <div className="title">
             <span>Shares Files</span>
             <img src="./arrowUp.png" alt="" />
             <span> Chat Setting</span>
             <img src="./arrowDown.png" alt="" />
           </div>
-        </div>
+        </div> */}
       </div>
 
       <button onClick={handleBlockToggle}>
