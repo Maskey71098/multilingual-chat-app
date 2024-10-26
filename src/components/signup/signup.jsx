@@ -78,6 +78,7 @@ export const Signup = () => {
           id: userCredential.user.uid,
           blocked: [],
           friends: [],
+          avatar: avatarURL,
         });
 
         // Create user chat document in "userchats" collection
@@ -112,7 +113,7 @@ export const Signup = () => {
           usernameLowercase: username.toLowerCase(),
           email: user.email,
           id: user.uid,
-          avatarURL: user.photoURL,
+          avatar: user.photoURL,
           blocked: [],
           friends: [],
         });

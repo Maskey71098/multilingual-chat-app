@@ -19,9 +19,11 @@ const List = () => {
       <Userinfo />
       <ChatList setInput={setInput} />
       {filteredFriends?.length > 0 ? (
-        filteredFriends?.map((friend, index) => {
-          return <UserList key={index} user={friend} />;
-        })
+        <div className="listContainer">
+          {filteredFriends.map((friend, index) => (
+            <UserList key={index} user={friend} />
+          ))}
+        </div>
       ) : input ? (
         <div>Friend Not Found!</div>
       ) : (
