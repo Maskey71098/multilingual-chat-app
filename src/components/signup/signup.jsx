@@ -73,10 +73,12 @@ export const Signup = () => {
         const userDocRef = doc(db, "users", userCredential.user.uid);
         transaction.set(userDocRef, {
           username,
+          usernameLowercase: username.toLowerCase(),
           email,
           id: userCredential.user.uid,
           blocked: [],
           friends: [],
+          avatar: avatarURL,
         });
 
         // Create user chat document in "userchats" collection
@@ -93,38 +95,39 @@ export const Signup = () => {
     }
   };
 
-// Addition of Google Sign-In
-const handleGoogleSignup = async () => {
-  setError(null);
-  setSuccess(false);
-  try {
-    // Sign in with google
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
+  // Addition of Google Sign-In
+  const handleGoogleSignup = async () => {
+    setError(null);
+    setSuccess(false);
+    try {
+      // Sign in with google
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const username = user.displayName || "Anonymous";
 
-    // Checking if the user is new or not
-    await runTransaction(db, async (transaction) => {
-      const userDocRef = doc(db, "users", user.uid);
-      transaction.set(userDocRef, {
-        username: user.displayName || "Anonymous",
-        email: user.email,
-        id: user.uid,
-        avatarURL: user.photoURL,
-        blocked : [],
-        friends: [],
+      // Checking if the user is new or not
+      await runTransaction(db, async (transaction) => {
+        const userDocRef = doc(db, "users", user.uid);
+        transaction.set(userDocRef, {
+          username,
+          usernameLowercase: username.toLowerCase(),
+          email: user.email,
+          id: user.uid,
+          avatar: user.photoURL,
+          blocked: [],
+          friends: [],
+        });
+
+        const userChatsDocRef = doc(db, "userchats", user.uid);
+        transaction.set(userChatsDocRef, {
+          chats: [],
+        });
       });
-
-      const userChatsDocRef = doc(db, "userchats", user.uid);
-      transaction.set(userChatsDocRef, {
-        chats: [],
-      });
-    });
-
-  } catch(err) {
-    console.error("Google Sign-Up error:", err);
-    setError(err.message);
-  }
-};
+    } catch (err) {
+      console.error("Google Sign-Up error:", err);
+      setError(err.message);
+    }
+  };
 
   return (
     <div className="signup-container">
@@ -218,7 +221,7 @@ const handleGoogleSignup = async () => {
             {error && <p style={{ color: "red" }}>{error}</p>}
             {success && <p style={{ color: "green" }}>Signup successful!</p>}
 
-            <Button variant="dark" type="submit" className = "me-2">
+            <Button variant="dark" type="submit" className="me-2">
               Sign Up with Email
             </Button>
 

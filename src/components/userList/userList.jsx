@@ -6,7 +6,7 @@ const UserList = ({ user }) => {
   return (
     <div className="userList" onClick={() => setActiveFriend(user)}>
       <div className="item">
-        <img src={user?.user?.avatar || "./avatar.png"} />
+        <img src={user?.avatar || "./avatar.png"} />
         <div className="texts">
           <span>{user.username}</span>
           <p className="text-secondary">
