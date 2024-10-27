@@ -1,14 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import useChatStore from "../../lib/chatStore"; // Import Zustand store
 import "./chat.css";
-
-import { auth } from "../../lib/firebase";
+import EmojiPicker from "emoji-picker-react";
+import { auth, storage } from "../../lib/firebase"; // Ensure Firebase Storage is imported
 import { IsBlocked } from "../../lib/friendStore";
 import { toast } from "react-toastify";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase Storage utilities
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const Chat = ({ friend }) => {
-  const { messages, loadMessages, sendMessage } = useChatStore();
-  const currentUser = auth.currentUser;
+  const [open, setOpen] = useState(false);
+  const [image, setImage] = useState(null); // State to store selected image
+  const [uploading, setUploading] = useState(false); // State to show uploading status
+
+  const handleEmoji = (e) => {
+    setNewMessage((prev) => prev + e.emoji);
+    setOpen(false);
+  };
+
+  const { messages, loadInitialMessages, sendMessage, loadMoreMessages } =
+  useChatStore();
+    const currentUser = auth.currentUser;
   const [newMessage, setNewMessage] = useState("");
   const chatContainerRef = useRef(null);
   const [spinnerLoad, setSpinnerLoad] = useState(false);
@@ -21,7 +33,6 @@ const Chat = ({ friend }) => {
         chatContainerRef.current.scrollHeight;
     }
   };
-
   useEffect(() => {
     if (friend) {
       loadInitialMessages(currentUser, friend); // Load messages when component mounts
@@ -33,16 +44,21 @@ const Chat = ({ friend }) => {
       scrollToBottom();
     }
   }, [messages]);
-
   const handleSendMessage = async () => {
+    // Check if the current user has blocked the friend
     const userBlocked = await IsBlocked(currentUser.uid, friend.id);
+    // Check if the friend has blocked the current user
     const friendBlocked = await IsBlocked(friend.id, currentUser.uid);
 
     if (userBlocked) {
+      // user blocked friend
       toast.error("You need to unblock the user before sending a message.");
       return;
     } else if (friendBlocked) {
-      toast.error("You cannot send a message. You might be blocked by the other user.");
+      // friend blocked user
+      toast.error(
+        "You cannot send a message. You might be blocked by the other user."
+      );
       return;
     }
 
@@ -61,7 +77,9 @@ const Chat = ({ friend }) => {
         setUploading(false); // Set uploading to false after completion
       }
     } else {
-      sendMessage(currentUser.uid, friend.id, newMessage); // Send text message
+      console.log("Sent ");
+      
+      sendMessage(currentUser.uid, friend.id, newMessage,""); // Send text message
       setNewMessage("");
     }
   };
@@ -103,7 +121,7 @@ const Chat = ({ friend }) => {
           </div>
         </div>
         <div className="icons">
-          <FontAwesomeIcon icon="fa-solid fa-phone" size="lg" />
+        <FontAwesomeIcon icon="fa-solid fa-phone" size="lg" />
           <FontAwesomeIcon icon="fa-solid fa-video" size="lg" />
           <FontAwesomeIcon icon="fa-solid fa-circle-info" size="lg" />
         </div>
@@ -116,10 +134,14 @@ const Chat = ({ friend }) => {
       <div className="center" ref={chatContainerRef} onScroll={handleScroll}>
         {messages.map((message, index) => (
           <div
-            className={`message ${message.senderId === currentUser.uid ? "own" : ""}`}
-            key={index}
-          >
-            {message.senderId !== currentUser.uid && <img src="./avatar.png" alt="" />}
+          className={`message ${
+            message.senderId === currentUser.uid ? "own" : ""
+          }`}
+          key={index}
+        >
+          {message.senderId !== currentUser.uid && (
+            <img src="./avatar.png" alt="" />
+          )}
             <div className="texts">
               {message.imageUrl ? (
                 <img src={message.imageUrl} alt="Sent" className="sent-image" />
@@ -139,9 +161,26 @@ const Chat = ({ friend }) => {
       >
         <div className="bottom">
           <div className="icons">
-            <img src="./mic.png" alt="Microphone" />
-            <img src="/img.png" alt="Image" />
-            <img src="/images.png" alt="translate"/>
+            <div className="emoji">
+              <img
+                src="./emoji1.png"
+                alt="Emoji"
+                onClick={() => setOpen((prev) => !prev)}
+              />
+              <div className="picker">
+                <EmojiPicker open={open} onEmojiClick={handleEmoji} />
+              </div>
+            </div>
+            <label htmlFor="imageInput">
+              <img src="/gallery.png" alt="Image" />
+            </label>
+            <input
+              type="file"
+              id="imageInput"
+              style={{ display: "none" }}
+              accept="image/*"
+              onChange={handleImageUpload} // Handle image upload
+            />
           </div>
           <img src="/images.png" alt="translate"/>
           <input
@@ -151,9 +190,10 @@ const Chat = ({ friend }) => {
             onChange={(e) => setNewMessage(e.target.value)}
             disabled={uploading} // Disable input while uploading
           />
+          {image && <p>{image.name}</p>} {/* Display selected image name */}
         </div>
-        <button type="submit" className="sendButton">
-          Send
+        <button type="submit" className="sendButton" disabled={uploading}>
+          {uploading ? "Uploading..." : image ? "Send Image" : "Send"}
         </button>
       </form>
     </div>

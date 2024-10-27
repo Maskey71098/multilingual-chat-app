@@ -84,16 +84,10 @@
       &.own {
         align-self: flex-end;
 
-                .texts{
-                 p{
-                    background-color: blue;
+            .texts p{
+                    background-color: rgb(137, 202, 255);
                  }
-                }
             }
-        .texts p {
-          background-color: rgb(137, 202, 255);
-        }
-      }
 
       img {
         margin-top: 7px;
@@ -197,15 +191,7 @@
       align-items: center;
     }
   }
-        .sendButton{
-            background-color: rgba(37, 142, 177, 0.733);
-            color:lightblue;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            align-items: center;
-        }
-    }
-
+        
 }
+
+
