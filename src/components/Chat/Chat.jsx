@@ -46,26 +46,24 @@ const Chat = ({ friend }) => {
     }
   }, [messages]);
 
-  // Play sound and show notification on new message
-  useEffect(() => {
-    if (messages.length > 0) {
-      const latestMessage = messages[messages.length - 1];
-  
-      // Check if the latest message is from the friend and is new
-      if (
-        latestMessage.senderId !== currentUser.uid &&
-        latestMessage.timestamp !== lastMessageRef.current
-      ) {
-        audioRef.current.play();
-  
-        // Use the friend's username for notification
-        const senderUsername = friend.username || "Your Friend";
-        toast.info(`New message from ${senderUsername}!`);
-        
-        lastMessageRef.current = latestMessage.timestamp; // Update last message ref
-      }
+ // Play sound and show notification on new message
+ useEffect(() => {
+  if (messages.length > 0) {
+    const latestMessage = messages[messages.length - 1];
+
+    // Check if the latest message is from the friend and different from the last tracked message
+    if (
+      latestMessage.senderId !== currentUser.uid &&
+      latestMessage.timestamp !== lastMessageRef.current
+    ) {
+      audioRef.current.play();
+      toast.info("New message received!");
+      lastMessageRef.current = latestMessage.timestamp; // Update last message ref
     }
-  }, [messages, friend.username]);
+  }
+}, [messages]);
+
+  
 
   const handleSendMessage = async () => {
     const userBlocked = await IsBlocked(currentUser.uid, friend.id);
