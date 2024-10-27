@@ -5,3 +5,8 @@
   flex-direction: column;
   gap: 15px;
 }
+.listContainer {
+  height: 500px;
+  overflow: auto;
+  overflow-x: hidden;
+}

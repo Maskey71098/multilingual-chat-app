@@ -31,7 +31,10 @@ const AddUser = ({ show, handleClose }) => {
       const userRef = collection(db, "users");
       console.log("users", userRef);
 
-      const q = query(userRef, where("username", "==", username));
+      const q = query(
+        userRef,
+        where("usernameLowercase", "==", username.toLowerCase())
+      );
       console.log(q);
 
       const querySnapShot = await getDocs(q);
@@ -49,7 +52,6 @@ const AddUser = ({ show, handleClose }) => {
   // Modified:
 
   const newHandleAdd = async () => {
-
     const friendId = user.id;
 
     try {
