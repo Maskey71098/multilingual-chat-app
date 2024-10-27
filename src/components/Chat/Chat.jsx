@@ -1,31 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useChatStore from "../../lib/chatStore"; // Import Zustand store
 import "./chat.css";
-import EmojiPicker from "emoji-picker-react";
-import { auth, storage } from "../../lib/firebase"; // Ensure Firebase Storage is imported
+
+import { auth } from "../../lib/firebase";
 import { IsBlocked } from "../../lib/friendStore";
 import { toast } from "react-toastify";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase Storage utilities
 
 const Chat = ({ friend }) => {
-  const [open, setOpen] = useState(false);
-  const [image, setImage] = useState(null); // State to store selected image
-  const [uploading, setUploading] = useState(false); // State to show uploading status
-
-  const handleEmoji = (e) => {
-    setNewMessage((prev) => prev + e.emoji);
-    setOpen(false);
-  };
-
-  const { messages, loadMessages, sendMessage } = useChatStore(); // Assume `sendMessage` can handle image URLs too
+  const { messages, loadMessages, sendMessage } = useChatStore();
   const currentUser = auth.currentUser;
   const [newMessage, setNewMessage] = useState("");
+  const chatContainerRef = useRef(null);
+  const [spinnerLoad, setSpinnerLoad] = useState(false);
+  const isLoadingMore = useRef(false);
+
+  // Scroll to the bottom of the chat
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  };
 
   useEffect(() => {
     if (friend) {
-      loadMessages(currentUser, friend); // Load messages when component mounts
+      loadInitialMessages(currentUser, friend); // Load messages when component mounts
     }
-  }, [loadMessages, friend]);
+  }, [loadInitialMessages, currentUser, friend]);
+
+  useEffect(() => {
+    if (!isLoadingMore.current) {
+      scrollToBottom();
+    }
+  }, [messages]);
 
   const handleSendMessage = async () => {
     const userBlocked = await IsBlocked(currentUser.uid, friend.id);
@@ -66,6 +73,25 @@ const Chat = ({ friend }) => {
     }
   };
 
+  const handleScroll = () => {
+    if (chatContainerRef.current.scrollTop === 0) {
+      isLoadingMore.current = true; // Indicate that more messages are being loaded
+      setSpinnerLoad(true);
+      // Save the current scroll height before loading more messages
+      const previousScrollHeight = chatContainerRef.current.scrollHeight;
+      loadMoreMessages(currentUser, friend);
+
+      // Delay to wait for the messages to load, then restore scroll position
+      setTimeout(() => {
+        const currentScrollHeight = chatContainerRef.current.scrollHeight;
+        chatContainerRef.current.scrollTop =
+          currentScrollHeight - previousScrollHeight;
+        isLoadingMore.current = false; // Loading complete
+        setSpinnerLoad(false);
+      }, 200); // Adjust timeout as needed
+    }
+  };
+
   return friend ? (
     <div className="chat">
       <div className="top">
@@ -77,12 +103,17 @@ const Chat = ({ friend }) => {
           </div>
         </div>
         <div className="icons">
-          <img src="./phone.png" alt="" />
-          <img src="./video.png" alt="" />
-          <img src="./info.png" alt="" />
+          <FontAwesomeIcon icon="fa-solid fa-phone" size="lg" />
+          <FontAwesomeIcon icon="fa-solid fa-video" size="lg" />
+          <FontAwesomeIcon icon="fa-solid fa-circle-info" size="lg" />
         </div>
       </div>
-      <div className="center">
+      {spinnerLoad && (
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border" role="status"></div>
+        </div>
+      )}
+      <div className="center" ref={chatContainerRef} onScroll={handleScroll}>
         {messages.map((message, index) => (
           <div
             className={`message ${message.senderId === currentUser.uid ? "own" : ""}`}
@@ -108,26 +139,9 @@ const Chat = ({ friend }) => {
       >
         <div className="bottom">
           <div className="icons">
-            <div className="emoji">
-              <img
-                src="./emoji.png"
-                alt="Emoji"
-                onClick={() => setOpen((prev) => !prev)}
-              />
-              <div className="picker">
-                <EmojiPicker open={open} onEmojiClick={handleEmoji} />
-              </div>
-            </div>
-            <label htmlFor="imageInput">
-              <img src="/img.png" alt="Image" />
-            </label>
-            <input
-              type="file"
-              id="imageInput"
-              style={{ display: "none" }}
-              accept="image/*"
-              onChange={handleImageUpload} // Handle image upload
-            />
+            <img src="./mic.png" alt="Microphone" />
+            <img src="/img.png" alt="Image" />
+            <img src="/images.png" alt="translate"/>
           </div>
           <img src="/images.png" alt="translate"/>
           <input
@@ -137,10 +151,9 @@ const Chat = ({ friend }) => {
             onChange={(e) => setNewMessage(e.target.value)}
             disabled={uploading} // Disable input while uploading
           />
-          {image && <p>{image.name}</p>} {/* Display selected image name */}
         </div>
-        <button type="submit" className="sendButton" disabled={uploading}>
-          {uploading ? "Uploading..." : image ? "Send Image" : "Send"}
+        <button type="submit" className="sendButton">
+          Send
         </button>
       </form>
     </div>
