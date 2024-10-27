@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useChatStore from "../../lib/chatStore"; // Import Zustand store
 import "./chat.css";
 import EmojiPicker from "emoji-picker-react";
+import { toast } from "react-toastify";
 import { auth, storage } from "../../lib/firebase"; // Ensure Firebase Storage is imported
 import { IsBlocked } from "../../lib/friendStore";
-import { toast } from "react-toastify";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase Storage utilities
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -18,8 +20,9 @@ const Chat = ({ friend }) => {
     setOpen(false);
   };
 
-  const { messages, loadInitialMessages, sendMessage, loadMoreMessages } =
-  useChatStore();
+  const { messages, loadInitialInitialMessages, sendMessage, loadMoreMessages, loadMoreMessages } =
+ 
+    useChatStore();
     const currentUser = auth.currentUser;
   const [newMessage, setNewMessage] = useState("");
   const chatContainerRef = useRef(null);
@@ -32,12 +35,29 @@ const Chat = ({ friend }) => {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
+  };  const chatContainerRef = useRef(null);
+  const [spinnerLoad, setSpinnerLoad] = useState(false);
+  const isLoadingMore = useRef(false);
+
+  // Scroll to the bottom of the chat
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
   };
+
   useEffect(() => {
     if (friend) {
-      loadInitialMessages(currentUser, friend); // Load messages when component mounts
+      loadInitialInitialMessages(currentUser, friend); // Load messages when component mounts
     }
-  }, [loadInitialMessages, currentUser, friend]);
+  }, [loadInitialInitialMessages, currentUser, currentUser, friend]);
+
+  useEffect(() => {
+    if (!isLoadingMore.current) {
+      scrollToBottom();
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (!isLoadingMore.current) {
@@ -110,6 +130,25 @@ const Chat = ({ friend }) => {
     }
   };
 
+  const handleScroll = () => {
+    if (chatContainerRef.current.scrollTop === 0) {
+      isLoadingMore.current = true; // Indicate that more messages are being loaded
+      setSpinnerLoad(true);
+      // Save the current scroll height before loading more messages
+      const previousScrollHeight = chatContainerRef.current.scrollHeight;
+      loadMoreMessages(currentUser, friend);
+
+      // Delay to wait for the messages to load, then restore scroll position
+      setTimeout(() => {
+        const currentScrollHeight = chatContainerRef.current.scrollHeight;
+        chatContainerRef.current.scrollTop =
+          currentScrollHeight - previousScrollHeight;
+        isLoadingMore.current = false; // Loading complete
+        setSpinnerLoad(false);
+      }, 200); // Adjust timeout as needed
+    }
+  };
+
   return friend ? (
     <div className="chat">
       <div className="top">
@@ -131,7 +170,12 @@ const Chat = ({ friend }) => {
           <div className="spinner-border" role="status"></div>
         </div>
       )}
-      <div className="center" ref={chatContainerRef} onScroll={handleScroll}>
+      {spinnerLoad && (
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border" role="status"></div>
+        </div>
+      )}
+      <div className="center" ref={chatContainerRef} onScroll={handleScroll} ref={chatContainerRef} onScroll={handleScroll}>
         {messages.map((message, index) => (
           <div
           className={`message ${
@@ -161,6 +205,9 @@ const Chat = ({ friend }) => {
       >
         <div className="bottom">
           <div className="icons">
+            <FontAwesomeIcon icon="fa-solid fa-microphone" size="lg" />
+            <FontAwesomeIcon icon="fa-solid fa-image" size="lg" />
+            <img src="/images.png" alt="translate" />
             <div className="emoji">
               <img
                 src="./emoji1.png"
@@ -191,10 +238,10 @@ const Chat = ({ friend }) => {
             disabled={uploading} // Disable input while uploading
           />
           {image && <p>{image.name}</p>} {/* Display selected image name */}
+          <button type="submit" className="sendButton" disabled={uploading}>
+            {uploading ? "Uploading..." : image ? "Send Image" : "Send"}
+          </button>
         </div>
-        <button type="submit" className="sendButton" disabled={uploading}>
-          {uploading ? "Uploading..." : image ? "Send Image" : "Send"}
-        </button>
       </form>
     </div>
   ) : (
