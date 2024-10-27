@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import React, { useEffect, useRef, useState } from "react";
 import useChatStore from "../../lib/chatStore"; // Import Zustand store
 import "./chat.css";
 import EmojiPicker from "emoji-picker-react";
@@ -20,7 +19,7 @@ const Chat = ({ friend }) => {
     setOpen(false);
   };
 
-  const { messages, loadInitialInitialMessages, sendMessage, loadMoreMessages, loadMoreMessages } =
+  const { messages, loadInitialInitialMessages, sendMessage, loadMoreMessages } =
  
     useChatStore();
     const currentUser = auth.currentUser;
@@ -35,17 +34,9 @@ const Chat = ({ friend }) => {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
-  };  const chatContainerRef = useRef(null);
-  const [spinnerLoad, setSpinnerLoad] = useState(false);
-  const isLoadingMore = useRef(false);
+  };  
 
-  // Scroll to the bottom of the chat
-  const scrollToBottom = () => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
-    }
-  };
+  
 
   useEffect(() => {
     if (friend) {
@@ -59,11 +50,7 @@ const Chat = ({ friend }) => {
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (!isLoadingMore.current) {
-      scrollToBottom();
-    }
-  }, [messages]);
+ 
   const handleSendMessage = async () => {
     // Check if the current user has blocked the friend
     const userBlocked = await IsBlocked(currentUser.uid, friend.id);
@@ -130,24 +117,6 @@ const Chat = ({ friend }) => {
     }
   };
 
-  const handleScroll = () => {
-    if (chatContainerRef.current.scrollTop === 0) {
-      isLoadingMore.current = true; // Indicate that more messages are being loaded
-      setSpinnerLoad(true);
-      // Save the current scroll height before loading more messages
-      const previousScrollHeight = chatContainerRef.current.scrollHeight;
-      loadMoreMessages(currentUser, friend);
-
-      // Delay to wait for the messages to load, then restore scroll position
-      setTimeout(() => {
-        const currentScrollHeight = chatContainerRef.current.scrollHeight;
-        chatContainerRef.current.scrollTop =
-          currentScrollHeight - previousScrollHeight;
-        isLoadingMore.current = false; // Loading complete
-        setSpinnerLoad(false);
-      }, 200); // Adjust timeout as needed
-    }
-  };
 
   return friend ? (
     <div className="chat">
@@ -175,7 +144,7 @@ const Chat = ({ friend }) => {
           <div className="spinner-border" role="status"></div>
         </div>
       )}
-      <div className="center" ref={chatContainerRef} onScroll={handleScroll} ref={chatContainerRef} onScroll={handleScroll}>
+      <div className="center" ref={chatContainerRef} onScroll={handleScroll} >
         {messages.map((message, index) => (
           <div
           className={`message ${
