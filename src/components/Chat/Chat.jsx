@@ -7,7 +7,7 @@ import { auth, storage } from "../../lib/firebase"; // Ensure Firebase Storage i
 import { IsBlocked } from "../../lib/friendStore";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase Storage utilities
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 
 const Chat = ({ friend }) => {
   const [open, setOpen] = useState(false);
@@ -19,7 +19,7 @@ const Chat = ({ friend }) => {
     setOpen(false);
   };
 
-  const { messages, loadInitialInitialMessages, sendMessage, loadMoreMessages } =
+  const { messages, loadInitialMessages, sendMessage, loadMoreMessages } =
  
     useChatStore();
     const currentUser = auth.currentUser;
@@ -40,9 +40,9 @@ const Chat = ({ friend }) => {
 
   useEffect(() => {
     if (friend) {
-      loadInitialInitialMessages(currentUser, friend); // Load messages when component mounts
+      loadInitialMessages(currentUser, friend); // Load messages when component mounts
     }
-  }, [loadInitialInitialMessages, currentUser, currentUser, friend]);
+  }, [loadInitialMessages, currentUser, friend]);
 
   useEffect(() => {
     if (!isLoadingMore.current) {
@@ -174,9 +174,10 @@ const Chat = ({ friend }) => {
       >
         <div className="bottom">
           <div className="icons">
-            <FontAwesomeIcon icon="fa-solid fa-microphone" size="lg" />
-            <FontAwesomeIcon icon="fa-solid fa-image" size="lg" />
-            <img src="/images.png" alt="translate" />
+            <FontAwesomeIcon icon="fa-solid fa-gallery" size="lg" />
+            <FontAwesomeIcon icon="fa-solid fa-emoji1" size="lg" />
+            <FontAwesomeIcon icon="fa-solid fa-images" size="lg" />
+            
             <div className="emoji">
               <img
                 src="./emoji1.png"
