@@ -4,7 +4,7 @@ import { useState } from "react";
 import AddUser from "../chatList/AddUser";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const Userinfo = () => {
+const Userinfo = ({ showEditUser }) => {
   const { currentUser } = useUserStore();
   const [addUser, setAddUser] = useState(false);
   const handleAddClick = () => {
@@ -20,12 +20,11 @@ const Userinfo = () => {
         <img src="./edit.png" alt="" />
         <FontAwesomeIcon
           icon="fa-solid fa-user-pen"
-          // size="lg"
           style={{ cursor: "pointer" }}
+          onClick={showEditUser}
         />
         <FontAwesomeIcon
           icon="fa-solid fa-plus"
-          // size=""
           style={{ cursor: "pointer" }}
           onClick={handleAddClick}
         />

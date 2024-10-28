@@ -10,7 +10,7 @@
     align-items: center;
     justify-content: space-between;
     box-shadow: rgba(33, 35, 38, 0.1) 0px 10px 10px -10px;
-  
+
     .user {
       display: flex;
       align-items: center;
@@ -41,7 +41,6 @@
         }
       }
     }
-
 
     .icons {
       display: flex;
@@ -84,12 +83,11 @@
 
       &.own {
         align-self: flex-end;
-   
 
-            .texts p{
-                    background-color: rgb(137, 202, 255);
-                 }
-            }
+        .texts p {
+          background-color: rgb(137, 202, 255);
+        }
+      }
 
       img {
         margin-top: 7px;
@@ -98,6 +96,14 @@
         border-radius: 50%;
         object-fit: cover;
       }
+
+      .sent-image {
+        height: 250px;
+        width: 250px;
+        border-radius: 10px;
+        object-fit: contain;
+      }
+
       .texts {
         flex: 1;
         display: flex;
@@ -111,7 +117,6 @@
           font-family: "Fredoka", "sans-serif";
           font-size: large;
         }
-       
 
         span {
           font-size: 13px;
@@ -120,7 +125,6 @@
       }
     }
   }
-      
 
   .bottom {
     padding: 20px;
@@ -133,7 +137,6 @@
     box-shadow: 0 -5px 5px -5px rgba(0, 0, 0, 0.1);
 
     position: relative;
- 
 
     .icons {
       display: flex;
@@ -161,34 +164,33 @@
       font-size: 16px;
       font-family: "Fredoka", "sans-serif";
     }
-         img{
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-         }
-        
-        
-        input{
-            flex: 1;
-            background-color: rgb(17, 25, 40, 0.5);
-            border: none;
-            outline: none;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-family: "Fredoka", "sans-serif" ; 
-        }
+    img {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
 
-        .emoji{
-            position: relative;
+    input {
+      flex: 1;
+      background-color: rgb(17, 25, 40, 0.5);
+      border: none;
+      outline: none;
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-family: "Fredoka", "sans-serif";
+    }
 
-            .picker{
-                position: absolute;
-                bottom: 50px;
-                left: 0;
-            }
-        }
+    .emoji {
+      position: relative;
+
+      .picker {
+        position: absolute;
+        bottom: 50px;
+        left: 0;
+      }
+    }
 
     .sendButton {
       background-color: rgb(24, 24, 24);
@@ -200,8 +202,4 @@
       align-items: center;
     }
   }
-        
 }
-
-
-
