@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { db as database } from "./firebase"; // Import your Firebase config
+import { db as database, db } from "./firebase"; // Import your Firebase config
 
 import {
   collection,
@@ -12,15 +12,23 @@ import {
   orderBy,
   limit,
   startAfter,
+  writeBatch,
+  doc,
 } from "firebase/firestore";
 
 // Define a Message type
-const createMessage = ({ senderId, receiverId, text, timestamp,imageUrl }) => ({
+const createMessage = ({
+  senderId,
+  receiverId,
+  text,
+  timestamp,
+  imageUrl,
+}) => ({
   senderId, // The ID of the user sending the message
   receiverId, // The ID of the user receiving the message
   text, // The message content
   timestamp, // The time the message was sent
-  imageUrl // The image url sent
+  imageUrl, // The image url sent
 });
 
 const useChatStore = create((set, get) => ({
@@ -37,7 +45,7 @@ const useChatStore = create((set, get) => ({
   loadInitialMessages: (user, friend) => {
     const messagesRef = collection(database, "messages");
 
-    // Create a query to fetch the first 5 messages where the user is either the sender or receiver
+    // Create a query to fetch the first 10 messages where the user is either the sender or receiver
     const messagesQuery = query(
       messagesRef,
       or(
@@ -51,7 +59,7 @@ const useChatStore = create((set, get) => ({
         )
       ),
       orderBy("timestamp", "desc"),
-      limit(5) // Fetch only 5 messages initially
+      limit(10) // Fetch only 10 messages initially
     );
 
     // Attach a real-time listener to the filtered messages collection
@@ -95,7 +103,7 @@ const useChatStore = create((set, get) => ({
 
       orderBy("timestamp", "desc"),
       startAfter(lastVisible), // Continue from the last message fetched
-      limit(5) // Fetch 5 more messages
+      limit(10) // Fetch 10 more messages
     );
 
     onSnapshot(messagesQuery, (snapshot) => {
@@ -123,11 +131,13 @@ const useChatStore = create((set, get) => ({
     set({ messages: [], lastVisible: null }); // Reset pagination when resetting messages
   },
 
-  sendMessage: async (senderId, receiverId, text,imageUrl) => {
-    if (text!==null && text.trim() === "") return;
-    console.log(imageUrl)
+  sendMessage: async (senderId, receiverId, text, imageUrl) => {
+    if (text !== null && text.trim() === "") return;
+    console.log(imageUrl);
 
     const messagesRef = collection(database, "messages");
+    const senderDocRef = doc(db, "users", senderId);
+    const receiverDocRef = doc(db, "users", receiverId);
 
     try {
       // Create a message object using the defined schema
@@ -139,6 +149,21 @@ const useChatStore = create((set, get) => ({
         timestamp: new Date().toISOString(),
       });
       await addDoc(messagesRef, message);
+
+      //Update lastMessage for both sender and receiver documents
+      const lastMessageData = {
+        text: message?.text,
+        timestamp: message?.timestamp,
+        imageUrl,
+      };
+
+      // Use a Firestore batch to perform both updates in a single operation
+      const batch = writeBatch(db);
+      batch.update(senderDocRef, { lastMessage: lastMessageData });
+      batch.update(receiverDocRef, { lastMessage: lastMessageData });
+
+      await batch.commit();
+
       // Reset error state on successful message send
       set({ error: null });
     } catch (error) {
@@ -150,5 +175,3 @@ const useChatStore = create((set, get) => ({
 }));
 
 export default useChatStore;
-
-

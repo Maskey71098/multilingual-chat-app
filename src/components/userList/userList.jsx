@@ -10,11 +10,11 @@ const UserList = ({ user }) => {
         <div className="texts">
           <span>{user.username}</span>
           <p className="text-secondary">
-            {user?.lastMessage.text 
-            ? user?.lastMessage?.text 
-            : user?.lastMessage?.imageUrl
-            ? "Photo" 
-            :"Start conversation here!"}
+            {user?.lastMessage?.text
+              ? user?.lastMessage?.text
+              : user?.lastMessage?.imageUrl
+              ? "Photo"
+              : "Start conversation here!"}
           </p>
         </div>
       </div>
