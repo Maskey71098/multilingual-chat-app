@@ -1,46 +1,44 @@
 import React, { useEffect, useRef, useState } from "react";
-import useChatStore from "../../lib/chatStore"; // Import Zustand store
+import useChatStore from "../../lib/chatStore";
 import "./chat.css";
 import EmojiPicker from "emoji-picker-react";
 import { toast } from "react-toastify";
-import { auth, storage } from "../../lib/firebase"; // Ensure Firebase Storage is imported
+import { auth, storage } from "../../lib/firebase";
 import { IsBlocked } from "../../lib/friendStore";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase Storage utilities
-
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const Chat = ({ friend }) => {
   const [open, setOpen] = useState(false);
-  const [image, setImage] = useState(null); // State to store selected image
-  const [uploading, setUploading] = useState(false); // State to show uploading status
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [newMessage, setNewMessage] = useState("");
+  const [spinnerLoad, setSpinnerLoad] = useState(false);
+
+  const chatContainerRef = useRef(null);
+  const isLoadingMore = useRef(false);
+  const audioRef = useRef(new Audio("/notification.mp3"));
+  const lastMessageRef = useRef(null); // Track the last message ID or timestamp
+
+  const { messages, loadInitialMessages, sendMessage, loadMoreMessages } =
+    useChatStore();
+  const currentUser = auth.currentUser;
 
   const handleEmoji = (e) => {
     setNewMessage((prev) => prev + e.emoji);
     setOpen(false);
   };
 
-  const { messages, loadInitialMessages, sendMessage, loadMoreMessages } =
- 
-    useChatStore();
-    const currentUser = auth.currentUser;
-  const [newMessage, setNewMessage] = useState("");
-  const chatContainerRef = useRef(null);
-  const [spinnerLoad, setSpinnerLoad] = useState(false);
-  const isLoadingMore = useRef(false);
-
-  // Scroll to the bottom of the chat
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
-  };  
-
-  
+  };
 
   useEffect(() => {
     if (friend) {
-      loadInitialMessages(currentUser, friend); // Load messages when component mounts
+      loadInitialMessages(currentUser, friend);
     }
   }, [loadInitialMessages, currentUser, friend]);
 
@@ -50,19 +48,31 @@ const Chat = ({ friend }) => {
     }
   }, [messages]);
 
- 
+  // Play sound and show notification on new message
+  useEffect(() => {
+    if (messages.length > 0) {
+      const latestMessage = messages[messages.length - 1];
+
+      // Check if the latest message is from the friend and different from the last tracked message
+      if (
+        latestMessage.senderId !== currentUser.uid &&
+        latestMessage.timestamp !== lastMessageRef.current
+      ) {
+        audioRef.current.play();
+        toast.info("New message received!");
+        lastMessageRef.current = latestMessage.timestamp; // Update last message ref
+      }
+    }
+  }, [messages]);
+
   const handleSendMessage = async () => {
-    // Check if the current user has blocked the friend
     const userBlocked = await IsBlocked(currentUser.uid, friend.id);
-    // Check if the friend has blocked the current user
     const friendBlocked = await IsBlocked(friend.id, currentUser.uid);
 
     if (userBlocked) {
-      // user blocked friend
       toast.error("You need to unblock the user before sending a message.");
       return;
     } else if (friendBlocked) {
-      // friend blocked user
       toast.error(
         "You cannot send a message. You might be blocked by the other user."
       );
@@ -70,23 +80,24 @@ const Chat = ({ friend }) => {
     }
 
     if (image) {
-      setUploading(true); // Set uploading to true while uploading the image
+      setUploading(true);
       try {
-        const imageRef = ref(storage, `images/${currentUser.uid}/${image.name}`);
-        await uploadBytes(imageRef, image); // Upload image to Firebase Storage
-        const imageUrl = await getDownloadURL(imageRef); // Get the image URL after upload
+        const imageRef = ref(
+          storage,
+          `images/${currentUser.uid}/${image.name}`
+        );
+        await uploadBytes(imageRef, image);
+        const imageUrl = await getDownloadURL(imageRef);
 
-        sendMessage(currentUser.uid, friend.id, null, imageUrl); // Send message with image URL
-        setImage(null); // Clear the image input
+        sendMessage(currentUser.uid, friend.id, null, imageUrl);
+        setImage(null);
       } catch (error) {
         toast.error("Image upload failed. Please try again.");
       } finally {
-        setUploading(false); // Set uploading to false after completion
+        setUploading(false);
       }
     } else {
-      console.log("Sent ");
-      
-      sendMessage(currentUser.uid, friend.id, newMessage,""); // Send text message
+      sendMessage(currentUser.uid, friend.id, newMessage, "");
       setNewMessage("");
     }
   };
@@ -94,29 +105,26 @@ const Chat = ({ friend }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImage(file); // Store selected image in state
+      setImage(file);
     }
   };
 
   const handleScroll = () => {
     if (chatContainerRef.current.scrollTop === 0) {
-      isLoadingMore.current = true; // Indicate that more messages are being loaded
+      isLoadingMore.current = true;
       setSpinnerLoad(true);
-      // Save the current scroll height before loading more messages
       const previousScrollHeight = chatContainerRef.current.scrollHeight;
       loadMoreMessages(currentUser, friend);
 
-      // Delay to wait for the messages to load, then restore scroll position
       setTimeout(() => {
         const currentScrollHeight = chatContainerRef.current.scrollHeight;
         chatContainerRef.current.scrollTop =
           currentScrollHeight - previousScrollHeight;
-        isLoadingMore.current = false; // Loading complete
+        isLoadingMore.current = false;
         setSpinnerLoad(false);
-      }, 200); // Adjust timeout as needed
+      }, 200);
     }
   };
-
 
   return friend ? (
     <div className="chat">
@@ -129,7 +137,7 @@ const Chat = ({ friend }) => {
           </div>
         </div>
         <div className="icons">
-        <FontAwesomeIcon icon="fa-solid fa-phone" size="lg" />
+          <FontAwesomeIcon icon="fa-solid fa-phone" size="lg" />
           <FontAwesomeIcon icon="fa-solid fa-video" size="lg" />
           <FontAwesomeIcon icon="fa-solid fa-circle-info" size="lg" />
         </div>
@@ -139,22 +147,17 @@ const Chat = ({ friend }) => {
           <div className="spinner-border" role="status"></div>
         </div>
       )}
-      {spinnerLoad && (
-        <div className="d-flex justify-content-center">
-          <div className="spinner-border" role="status"></div>
-        </div>
-      )}
-      <div className="center" ref={chatContainerRef} onScroll={handleScroll} >
+      <div className="center" ref={chatContainerRef} onScroll={handleScroll}>
         {messages.map((message, index) => (
           <div
-          className={`message ${
-            message.senderId === currentUser.uid ? "own" : ""
-          }`}
-          key={index}
-        >
-          {message.senderId !== currentUser.uid && (
-            <img src="./avatar.png" alt="" />
-          )}
+            className={`message ${
+              message.senderId === currentUser.uid ? "own" : ""
+            }`}
+            key={index}
+          >
+            {message.senderId !== currentUser.uid && (
+              <img src="./avatar.png" alt="" />
+            )}
             <div className="texts">
               {message.imageUrl ? (
                 <img src={message.imageUrl} alt="Sent" className="sent-image" />
@@ -174,10 +177,6 @@ const Chat = ({ friend }) => {
       >
         <div className="bottom">
           <div className="icons">
-            <FontAwesomeIcon icon="fa-solid fa-gallery" size="lg" />
-            <FontAwesomeIcon icon="fa-solid fa-emoji1" size="lg" />
-            <FontAwesomeIcon icon="fa-solid fa-images" size="lg" />
-            
             <div className="emoji">
               <img
                 src="./emoji1.png"
@@ -196,18 +195,18 @@ const Chat = ({ friend }) => {
               id="imageInput"
               style={{ display: "none" }}
               accept="image/*"
-              onChange={handleImageUpload} // Handle image upload
+              onChange={handleImageUpload}
             />
           </div>
-          <img src="/images.png" alt="translate"/>
+          <img src="/images.png" alt="translate" />
           <input
             type="text"
             placeholder="type a message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            disabled={uploading} // Disable input while uploading
+            disabled={uploading}
           />
-          {image && <p>{image.name}</p>} {/* Display selected image name */}
+          {image && <p>{image.name}</p>}
           <button type="submit" className="sendButton" disabled={uploading}>
             {uploading ? "Uploading..." : image ? "Send Image" : "Send"}
           </button>
