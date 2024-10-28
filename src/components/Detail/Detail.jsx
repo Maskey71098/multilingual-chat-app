@@ -5,11 +5,23 @@ import "./detail.css";
 import { doc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import Button from "react-bootstrap/Button";
+import useChatStore from "../../lib/chatStore";
+import { Image, Modal } from "react-bootstrap";
 
 const Detail = () => {
+  const [show, setShow] = useState(false);
+  const [currentImage, setCurrentImage] = useState(null);
+
+  const handleClose = () => setShow(false);
+  const handleShow = (imageSrc) => {
+    setCurrentImage(imageSrc);
+    setShow(true);
+  };
   const { activeFriend, blockUser, unblockUser } = useFriendsStore();
   const currentUser = auth.currentUser;
   const [isBlocked, setIsBlocked] = useState(false);
+  const { messages } = useChatStore();
+  const messagesWithImages = messages?.filter((item) => item?.imageUrl);
 
   // Effect to check if the active friend is blocked
   useEffect(() => {
@@ -68,52 +80,44 @@ const Detail = () => {
             <span> Shared photos</span>
             <img src="./arrowDown.png" alt="" />
           </div>
-          <div className="photos">
-            <div className="photoItem">
-              <div className="photoDetail">
-                <img
-                  src="https://images.pexels.com/photos/7381200/pexels-photo-7381200.jpeg?auto=compress&cs=tinysrgb&w=800&lazy=load"
-                  alt=""
-                />
-                <span>photo_2024_2.png</span>
-              </div>
-              <img src="./download.png" alt="" className="icon" />
-            </div>
-            <div className="photoItem">
-              <div className="photoDetail">
-                <img
-                  src="https://images.pexels.com/photos/7381200/pexels-photo-7381200.jpeg?auto=compress&cs=tinysrgb&w=800&lazy=load"
-                  alt=""
-                />
-                <span>photo_2024_2.png</span>
-              </div>
-              <img src="./download.png" alt="" className="icon" />
-            </div>
-          </div>
         </div>
-        {/* <div className="option">
-          <div className="title">
-            <span>Shares Files</span>
-            <img src="./arrowUp.png" alt="" />
-            <span> Chat Setting</span>
-            <img src="./arrowDown.png" alt="" />
-          </div>
-        </div> */}
       </div>
+      <div className="image_container">
+        {messagesWithImages?.map((item, index) => {
+          return (
+            <Image
+              key={index}
+              src={item?.imageUrl}
+              alt="imaaag"
+              className="image_url"
+              onClick={() => handleShow(item?.imageUrl)}
+            />
+          );
+        })}
+      </div>
+      <div className="button-container">
+        <Button
+          onClick={handleBlockToggle}
+          variant="dark"
+          size="sm"
+          style={{ marginBottom: "10px" }}
+        >
+          {isBlocked ? "Unblock User" : "Block User"}
+        </Button>
+        <br />
 
-      <Button
-        onClick={handleBlockToggle}
-        variant="dark"
-        size="sm"
-        style={{ marginBottom: "10px" }}
-      >
-        {isBlocked ? "Unblock User" : "Block User"}
-      </Button>
-      <br />
-
-      <Button variant="danger" size="sm" onClick={handleLogout}>
-        Logout
-      </Button>
+        <Button variant="danger" size="sm" onClick={handleLogout}>
+          Logout
+        </Button>
+      </div>
+      <Modal show={show} onHide={handleClose} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Image Preview</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Image src={currentImage} className="modal-image" />
+        </Modal.Body>
+      </Modal>
     </div>
   ) : (
     <div></div>
