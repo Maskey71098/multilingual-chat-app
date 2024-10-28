@@ -18,7 +18,7 @@ export const useUserStore = create((set) => ({
       const sessionIDSnap = await getDoc(doc(db, "sessions", uid));
       if (docSnap.exists()) {
         const sessionId = localStorage.getItem("userID");
-        if (sessionIDSnap.data().sessionId != sessionId) {
+        if (sessionIDSnap?.data()?.sessionId != sessionId) {
           set({ currentUser: null, isLoading: false });
         } else {
           set({ currentUser: docSnap.data(), isLoading: false });
