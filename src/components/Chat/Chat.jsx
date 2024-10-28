@@ -20,7 +20,8 @@ const Chat = ({ friend }) => {
   const audioRef = useRef(new Audio("/notification.mp3"));
   const lastMessageRef = useRef(null); // Track the last message ID or timestamp
 
-  const { messages, loadInitialMessages, sendMessage, loadMoreMessages } = useChatStore();
+  const { messages, loadInitialMessages, sendMessage, loadMoreMessages } =
+    useChatStore();
   const currentUser = auth.currentUser;
 
   const handleEmoji = (e) => {
@@ -30,7 +31,8 @@ const Chat = ({ friend }) => {
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   };
 
@@ -46,24 +48,22 @@ const Chat = ({ friend }) => {
     }
   }, [messages]);
 
- // Play sound and show notification on new message
- useEffect(() => {
-  if (messages.length > 0) {
-    const latestMessage = messages[messages.length - 1];
+  // Play sound and show notification on new message
+  useEffect(() => {
+    if (messages.length > 0) {
+      const latestMessage = messages[messages.length - 1];
 
-    // Check if the latest message is from the friend and different from the last tracked message
-    if (
-      latestMessage.senderId !== currentUser.uid &&
-      latestMessage.timestamp !== lastMessageRef.current
-    ) {
-      audioRef.current.play();
-      toast.info("New message received!");
-      lastMessageRef.current = latestMessage.timestamp; // Update last message ref
+      // Check if the latest message is from the friend and different from the last tracked message
+      if (
+        latestMessage.senderId !== currentUser.uid &&
+        latestMessage.timestamp !== lastMessageRef.current
+      ) {
+        audioRef.current.play();
+        toast.info("New message received!");
+        lastMessageRef.current = latestMessage.timestamp; // Update last message ref
+      }
     }
-  }
-}, [messages]);
-
-  
+  }, [messages]);
 
   const handleSendMessage = async () => {
     const userBlocked = await IsBlocked(currentUser.uid, friend.id);
@@ -73,14 +73,19 @@ const Chat = ({ friend }) => {
       toast.error("You need to unblock the user before sending a message.");
       return;
     } else if (friendBlocked) {
-      toast.error("You cannot send a message. You might be blocked by the other user.");
+      toast.error(
+        "You cannot send a message. You might be blocked by the other user."
+      );
       return;
     }
 
     if (image) {
       setUploading(true);
       try {
-        const imageRef = ref(storage, `images/${currentUser.uid}/${image.name}`);
+        const imageRef = ref(
+          storage,
+          `images/${currentUser.uid}/${image.name}`
+        );
         await uploadBytes(imageRef, image);
         const imageUrl = await getDownloadURL(imageRef);
 
@@ -113,7 +118,8 @@ const Chat = ({ friend }) => {
 
       setTimeout(() => {
         const currentScrollHeight = chatContainerRef.current.scrollHeight;
-        chatContainerRef.current.scrollTop = currentScrollHeight - previousScrollHeight;
+        chatContainerRef.current.scrollTop =
+          currentScrollHeight - previousScrollHeight;
         isLoadingMore.current = false;
         setSpinnerLoad(false);
       }, 200);
@@ -144,10 +150,14 @@ const Chat = ({ friend }) => {
       <div className="center" ref={chatContainerRef} onScroll={handleScroll}>
         {messages.map((message, index) => (
           <div
-            className={`message ${message.senderId === currentUser.uid ? "own" : ""}`}
+            className={`message ${
+              message.senderId === currentUser.uid ? "own" : ""
+            }`}
             key={index}
           >
-            {message.senderId !== currentUser.uid && <img src="./avatar.png" alt="" />}
+            {message.senderId !== currentUser.uid && (
+              <img src="./avatar.png" alt="" />
+            )}
             <div className="texts">
               {message.imageUrl ? (
                 <img src={message.imageUrl} alt="Sent" className="sent-image" />
@@ -167,9 +177,6 @@ const Chat = ({ friend }) => {
       >
         <div className="bottom">
           <div className="icons">
-            <FontAwesomeIcon icon="fa-solid fa-gallery" size="lg" />
-            <FontAwesomeIcon icon="fa-solid fa-emoji1" size="lg" />
-            <FontAwesomeIcon icon="fa-solid fa-images" size="lg" />
             <div className="emoji">
               <img
                 src="./emoji1.png"
@@ -191,7 +198,7 @@ const Chat = ({ friend }) => {
               onChange={handleImageUpload}
             />
           </div>
-          <img src="/images.png" alt="translate"/>
+          <img src="/images.png" alt="translate" />
           <input
             type="text"
             placeholder="type a message..."
