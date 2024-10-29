@@ -87,6 +87,9 @@
         .texts p {
           background-color: rgb(137, 202, 255);
         }
+        span {
+          text-align: right;
+        }
       }
 
       img {
@@ -98,10 +101,10 @@
       }
 
       .sent-image {
-        height: 250px;
-        width: 250px;
+        height: 200px;
+        width: 200px;
         border-radius: 10px;
-        object-fit: contain;
+        object-fit: cover;
       }
 
       .texts {
