@@ -138,7 +138,7 @@ const Chat = ({ friend }) => {
     <div className="chat">
       <div className="top">
         <div className="user">
-          <img src="./avatar.png" alt="" />
+          <img src={friend?.avatar || "./avatar.png"} />{" "}
           <div className="texts">
             <span>{friend ? friend.username : "User"}</span>
             <p>you are now on chat</p>
@@ -156,7 +156,7 @@ const Chat = ({ friend }) => {
         </div>
       )}
       <div className="center" ref={chatContainerRef} onScroll={handleScroll}>
-        {messages.map((message, index) => (
+        {messages?.map((message, index) => (
           <div
             className={`message ${
               message.senderId === currentUser.uid ? "own" : ""
@@ -164,7 +164,7 @@ const Chat = ({ friend }) => {
             key={index}
           >
             {message.senderId !== currentUser.uid && (
-              <img src="./avatar.png" alt="" />
+              <img src={friend?.avatar || "./avatar.png"} />
             )}
             <div className="texts">
               {message.imageUrl ? (

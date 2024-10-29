@@ -17,6 +17,7 @@
       font-family: "Varela Round", sans-serif;
       margin: 0px;
       padding: 0px;
+      font-size: large;
     }
 
     img {
@@ -114,6 +115,6 @@
 }
 .button-container {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
+  bottom: 20px;
+  left: 20px;
 }
