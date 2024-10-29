@@ -58,7 +58,7 @@ const Detail = () => {
   return activeFriend ? (
     <div className="detail">
       <div className="user">
-        <img src="./avatar.png" alt="" />
+        <img src={activeFriend.avatar || "./avatar.png"} />{" "}
         <h2>{activeFriend.username}</h2>
         <p>this is my status</p>
       </div>

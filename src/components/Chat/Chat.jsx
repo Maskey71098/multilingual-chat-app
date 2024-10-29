@@ -130,7 +130,7 @@ const Chat = ({ friend }) => {
     <div className="chat">
       <div className="top">
         <div className="user">
-          <img src="./avatar.png" alt="" />
+          <img src={friend.avatar || "./avatar.png"} />{" "}
           <div className="texts">
             <span>{friend ? friend.username : "User"}</span>
             <p>you are now on chat</p>
