@@ -14,11 +14,13 @@ const Chat = ({ friend }) => {
   const [uploading, setUploading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [spinnerLoad, setSpinnerLoad] = useState(false);
+  const [pinnedMessages, setPinnedMessages] = useState({}); // Pinned messages by friend ID
 
   const chatContainerRef = useRef(null);
+  const messageRefs = useRef({}); // Refs for each message for locating pinned messages
   const isLoadingMore = useRef(false);
   const audioRef = useRef(new Audio("/notification.mp3"));
-  const lastMessageRef = useRef(null); // Track the last message ID or timestamp
+  const lastMessageRef = useRef(null);
 
   const { messages, loadInitialMessages, sendMessage, loadMoreMessages } =
     useChatStore();
@@ -48,19 +50,16 @@ const Chat = ({ friend }) => {
     }
   }, [messages]);
 
-  // Play sound and show notification on new message
   useEffect(() => {
     if (messages.length > 0) {
       const latestMessage = messages[messages.length - 1];
-
-      // Check if the latest message is from the friend and different from the last tracked message
       if (
         latestMessage.senderId !== currentUser.uid &&
         latestMessage.timestamp !== lastMessageRef.current
       ) {
         audioRef.current.play();
         toast.info("New message received!");
-        lastMessageRef.current = latestMessage.timestamp; // Update last message ref
+        lastMessageRef.current = latestMessage.timestamp;
       }
     }
   }, [messages]);
@@ -126,14 +125,41 @@ const Chat = ({ friend }) => {
     }
   };
 
+  const handlePinMessage = (message) => {
+    setPinnedMessages((prevPinned) => {
+      const friendPinnedMessages = prevPinned[friend.id] || [];
+      const isPinned = friendPinnedMessages.some(
+        (msg) => msg.id === message.id
+      );
+
+      return {
+        ...prevPinned,
+        [friend.id]: isPinned
+          ? friendPinnedMessages.filter((msg) => msg.id !== message.id) // Unpin if already pinned
+          : [...friendPinnedMessages, message], // Pin new message
+      };
+    });
+  };
+
+  const locatePinnedMessage = (messageId) => {
+    const messageElement = messageRefs.current[messageId];
+    if (messageElement && chatContainerRef.current) {
+      messageElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      messageElement.classList.add("highlight");
+      setTimeout(() => {
+        messageElement.classList.remove("highlight");
+      }, 2000); // Highlight lasts for 2 seconds
+    }
+  };
+
   return friend ? (
     <div className="chat">
       <div className="top">
         <div className="user">
-          <img src={friend?.avatar || "./avatar.png"} />{" "}
+          <img src={friend?.avatar || "./avatar.png"} alt={`${friend.username}'s avatar`} />
           <div className="texts">
             <span>{friend ? friend.username : "User"}</span>
-            <p>you are now on chat</p>
+            <p>You are now on chat</p>
           </div>
         </div>
         <div className="icons">
@@ -142,6 +168,25 @@ const Chat = ({ friend }) => {
           <FontAwesomeIcon icon="fa-solid fa-circle-info" size="lg" />
         </div>
       </div>
+      {pinnedMessages[friend.id]?.length > 0 && (
+        <div className="pinned-messages">
+          <h4>Pinned Messages</h4>
+          {pinnedMessages[friend.id].map((msg, index) => (
+            <div key={index} className="pinned-message" onClick={() => locatePinnedMessage(msg.id)}>
+              {msg.imageUrl ? (
+                <img
+                  src={msg.imageUrl}
+                  alt="Pinned"
+                  className="pinned-image"
+                />
+              ) : (
+                <p>{msg.text}</p>
+              )}
+              <button onClick={() => handlePinMessage(msg)}>Unpin</button>
+            </div>
+          ))}
+        </div>
+      )}
       {spinnerLoad && (
         <div className="d-flex justify-content-center">
           <div className="spinner-border" role="status"></div>
@@ -150,13 +195,13 @@ const Chat = ({ friend }) => {
       <div className="center" ref={chatContainerRef} onScroll={handleScroll}>
         {messages?.map((message, index) => (
           <div
-            className={`message ${
-              message.senderId === currentUser.uid ? "own" : ""
-            }`}
+            className={`message ${message.senderId === currentUser.uid ? "own" : ""}`}
             key={index}
+            ref={(el) => (messageRefs.current[message.id] = el)}
+            onClick={() => handlePinMessage(message)}
           >
             {message.senderId !== currentUser.uid && (
-              <img src={friend?.avatar || "./avatar.png"} />
+              <img src={friend?.avatar || "./avatar.png"} alt="Sender Avatar" />
             )}
             <div className="texts">
               {message.imageUrl ? (
@@ -198,7 +243,7 @@ const Chat = ({ friend }) => {
               onChange={handleImageUpload}
             />
           </div>
-          <img src="/images.png" alt="translate" />
+          <img src="images.png" alt="Translate"/>
           <input
             type="text"
             placeholder="type a message..."

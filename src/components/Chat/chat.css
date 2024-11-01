@@ -80,6 +80,7 @@
       max-width: 1200px;
       display: flex;
       gap: 20px;
+      cursor: pointer;
 
       &.own {
         align-self: flex-end;
@@ -90,6 +91,7 @@
         span {
           text-align: right;
         }
+        
       }
 
       img {
