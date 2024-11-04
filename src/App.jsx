@@ -20,7 +20,10 @@ import {
   faMicrophone,
   faImage,
   faUserPen,
+  faLock,
+  faGear,
   faPlus,
+  faPhotoFilm,
 } from "@fortawesome/free-solid-svg-icons";
 
 const App = () => {
@@ -35,7 +38,10 @@ const App = () => {
     faMicrophone,
     faImage,
     faUserPen,
-    faPlus
+    faPlus,
+    faGear,
+    faPhotoFilm,
+    faLock
   );
 
   useEffect(() => {
