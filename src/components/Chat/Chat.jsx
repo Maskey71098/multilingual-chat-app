@@ -209,7 +209,10 @@ const Chat = ({ friend }) => {
               ) : (
                 <p>{message.text}</p>
               )}
-              <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
+              <span>
+              {new Date(message.timestamp).toLocaleDateString()}{" "}
+              {new Date(message.timestamp).toLocaleTimeString()}
+              </span>
             </div>
           </div>
         ))}

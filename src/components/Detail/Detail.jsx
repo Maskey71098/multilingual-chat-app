@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import Button from "react-bootstrap/Button";
 import useChatStore from "../../lib/chatStore";
 import { Image, Modal } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const Detail = () => {
   const [show, setShow] = useState(false);
@@ -60,25 +61,25 @@ const Detail = () => {
       <div className="user">
         <img src={activeFriend?.avatar || "./avatar.png"} />{" "}
         <h2>{activeFriend?.username}</h2>
-        <p>this is my status</p>
+        <p>Cool, Calm & Collected</p>
       </div>
       <div className="info">
         <div className="option">
           <div className="title">
+            <FontAwesomeIcon icon="fa-solid fa-gear" />
             <span> Chat Setting</span>
-            <img src="./arrowDown.png" alt="" />
           </div>
         </div>
         <div className="option">
           <div className="title">
+            <FontAwesomeIcon icon="fa-solid fa-lock" />
             <span>Privacy & Help</span>
-            <img src="./arrowUp.png" alt="" />
           </div>
         </div>
         <div className="option">
           <div className="title">
-            <span> Shared Media</span>
-            <img src="./arrowDown.png" alt="" />
+            <FontAwesomeIcon icon="fa-solid fa-image" />
+            <span> Shared photos</span>
           </div>
         </div>
       </div>

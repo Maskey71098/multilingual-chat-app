@@ -160,7 +160,6 @@
 
     input {
       flex: 1;
-      /* background-color: rgb(17, 25, 40, 0.5); */
       border: none;
       outline: none;
       color: rgb(38, 36, 36);
@@ -173,18 +172,6 @@
       width: 20px;
       height: 20px;
       cursor: pointer;
-    }
-
-    input {
-      flex: 1;
-      background-color: rgb(17, 25, 40, 0.5);
-      border: none;
-      outline: none;
-      color: white;
-      padding: 20px;
-      border-radius: 10px;
-      font-size: 16px;
-      font-family: "Fredoka", "sans-serif";
     }
 
     .emoji {
