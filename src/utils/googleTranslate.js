@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_KEY = "Add your api key from google cloud console";
+const API_KEY = "AIzaSyAQeLJGe64GuyR60W10T72q3cSG9yIRV-k";
 const API_URL = "https://translation.googleapis.com/language/translate/v2";
 
 const translateText = async (text, targetLanguage) => {
