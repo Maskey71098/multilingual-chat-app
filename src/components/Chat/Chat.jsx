@@ -7,6 +7,7 @@ import { auth, storage } from "../../lib/firebase";
 import { IsBlocked } from "../../lib/friendStore";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import translateText from "../../utils/googleTranslate";
 
 const Chat = ({ friend }) => {
   const [open, setOpen] = useState(false);
@@ -97,7 +98,14 @@ const Chat = ({ friend }) => {
         setUploading(false);
       }
     } else {
-      sendMessage(currentUser.uid, friend.id, newMessage, "");
+      const translatedMessage = await translateText(newMessage, "ne");
+      console.log("translatedMessage", translatedMessage);
+      sendMessage(
+        currentUser.uid,
+        friend.id,
+        translatedMessage ? translatedMessage : newMessage,
+        ""
+      );
       setNewMessage("");
     }
   };
