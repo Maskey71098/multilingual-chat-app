@@ -8,6 +8,7 @@ import { IsBlocked } from "../../lib/friendStore";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useUserStore } from "../../lib/userStore";
+import translateText from "../../utils/googleTranslate";
 
 const Chat = ({ friend }) => {
   const [open, setOpen] = useState(false);
@@ -124,6 +125,14 @@ const Chat = ({ friend }) => {
       }
     } else {
       sendMessage(currUser.uid, friend.id, newMessage, "");
+      const translatedMessage = await translateText(newMessage, "ne");
+      console.log("translatedMessage", translatedMessage);
+      sendMessage(
+        currentUser.uid,
+        friend.id,
+        translatedMessage ? translatedMessage : newMessage,
+        ""
+      );
       setNewMessage("");
       stopTyping(currUser.uid, friend.id); // Stop typing status after message is sent
       setIsTyping(false);

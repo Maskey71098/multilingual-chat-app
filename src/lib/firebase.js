@@ -9,7 +9,7 @@ import { initializeApp } from "firebase/app";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDfvSJs3LO_gmDmEcT99AocqrcIFd5VPRw",
+  apiKey: import.meta.env.VITE_API_KEY,
   authDomain: "bug-busters-firebase.firebaseapp.com",
   databaseURL: "https://bug-busters-firebase-default-rtdb.firebaseio.com",
   projectId: "bug-busters-firebase",
