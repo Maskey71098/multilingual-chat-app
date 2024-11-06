@@ -14,6 +14,8 @@ import {
   startAfter,
   writeBatch,
   doc,
+  setDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 // Define a Message type
@@ -36,6 +38,57 @@ const useChatStore = create((set, get) => ({
   user: null,
   lastVisible: null, // Track the last fetched message for pagination
   error: null, // State to hold error messages
+  typingStatus: {},
+
+  setTypingStatus: async (userid, friendId, typistUsername) => {
+    const userTypingDocId = `${userid}_${friendId}`;
+    const friendTypingDocId = `${friendId}_${userid}`;
+
+    const updates = {
+      typistUsername,
+      isTyping: true,
+    };
+
+    await setDoc(doc(database, "typingStatus", userTypingDocId), updates, {
+      merge: true,
+    });
+    await setDoc(doc(database, "typingStatus", friendTypingDocId), updates, {
+      merge: true,
+    });
+  },
+
+  // Function to stop typing with delay
+  stopTyping: (userid, friendId) => {
+    setTimeout(async () => {
+      const userTypingDocId = `${userid}_${friendId}`;
+      const friendTypingDocId = `${friendId}_${userid}`;
+
+      const updates = {
+        typistUsername: "",
+        isTyping: false,
+      };
+
+      await setDoc(doc(database, "typingStatus", userTypingDocId), updates, {
+        merge: true,
+      });
+      await setDoc(doc(database, "typingStatus", friendTypingDocId), updates, {
+        merge: true,
+      });
+    }, 2000); // 2-second delay
+  },
+
+  listenToTypingStatus: (userid, friendId) => {
+    const typingStatusRef = doc(
+      database,
+      "typingStatus",
+      `${friendId}_${userid}`
+    );
+    onSnapshot(typingStatusRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        set({ typingStatus: docSnapshot.data() });
+      }
+    });
+  },
 
   addMessage: (message) =>
     set((state) => ({
@@ -133,8 +186,6 @@ const useChatStore = create((set, get) => ({
 
   sendMessage: async (senderId, receiverId, text, imageUrl) => {
     if (text !== null && text.trim() === "") return;
-    console.log(imageUrl);
-
     const messagesRef = collection(database, "messages");
     const senderDocRef = doc(db, "users", senderId);
     const receiverDocRef = doc(db, "users", receiverId);
