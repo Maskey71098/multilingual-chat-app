@@ -15,6 +15,7 @@ import { auth, db } from "../../../lib/firebase";
 import { Button, Form, Modal, Stack } from "react-bootstrap";
 import { toast } from "react-toastify";
 import useFriendsStore from "../../../lib/friendStore";
+import { debugErrorMap } from "firebase/auth";
 
 const AddUser = ({ show, handleClose }) => {
   const [user, setUser] = useState(null);
@@ -47,6 +48,17 @@ const AddUser = ({ show, handleClose }) => {
     } catch (err) {
       console.log(err);
     }
+  };
+
+  const createTypingStatusDocument = async (chatId, username) => {
+    const typingStatusRef = doc(db, "typingStatus", chatId);
+
+    // Initialize typing status for the chat
+    await setDoc(typingStatusRef, {
+      chatId,
+      username,
+      isTyping: false,
+    });
   };
 
   // Modified:

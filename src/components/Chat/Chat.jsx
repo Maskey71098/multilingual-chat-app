@@ -7,6 +7,7 @@ import { auth, storage } from "../../lib/firebase";
 import { IsBlocked } from "../../lib/friendStore";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useUserStore } from "../../lib/userStore";
 import translateText from "../../utils/googleTranslate";
 
 const Chat = ({ friend }) => {
@@ -14,16 +15,27 @@ const Chat = ({ friend }) => {
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
+  const { currentUser } = useUserStore();
   const [spinnerLoad, setSpinnerLoad] = useState(false);
 
   const chatContainerRef = useRef(null);
   const isLoadingMore = useRef(false);
   const audioRef = useRef(new Audio("/notification.mp3"));
   const lastMessageRef = useRef(null); // Track the last message ID or timestamp
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeout = useRef(null);
 
-  const { messages, loadInitialMessages, sendMessage, loadMoreMessages } =
-    useChatStore();
-  const currentUser = auth.currentUser;
+  const {
+    messages,
+    loadInitialMessages,
+    sendMessage,
+    loadMoreMessages,
+    setTypingStatus,
+    stopTyping,
+    listenToTypingStatus,
+    typingStatus,
+  } = useChatStore();
+  const currUser = auth.currentUser;
 
   const handleEmoji = (e) => {
     setNewMessage((prev) => prev + e.emoji);
@@ -39,9 +51,10 @@ const Chat = ({ friend }) => {
 
   useEffect(() => {
     if (friend) {
-      loadInitialMessages(currentUser, friend);
+      loadInitialMessages(currUser, friend);
+      listenToTypingStatus(currUser.uid, friend.id);
     }
-  }, [loadInitialMessages, currentUser, friend]);
+  }, [loadInitialMessages, currUser, friend, listenToTypingStatus]);
 
   useEffect(() => {
     if (!isLoadingMore.current) {
@@ -56,7 +69,7 @@ const Chat = ({ friend }) => {
 
       // Check if the latest message is from the friend and different from the last tracked message
       if (
-        latestMessage.senderId !== currentUser.uid &&
+        latestMessage.senderId !== currUser.uid &&
         latestMessage.timestamp !== lastMessageRef.current
       ) {
         audioRef.current.play();
@@ -66,9 +79,23 @@ const Chat = ({ friend }) => {
     }
   }, [messages]);
 
+  const handleTyping = () => {
+    if (!isTyping) {
+      setTypingStatus(currUser.uid, friend.id, currentUser.username);
+      setIsTyping(true);
+    }
+
+    // Reset typing timeout each time the user types
+    clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      stopTyping(currUser.uid, friend.id);
+      setIsTyping(false);
+    }, 1500); // Adjust the delay as needed
+  };
+
   const handleSendMessage = async () => {
-    const userBlocked = await IsBlocked(currentUser.uid, friend.id);
-    const friendBlocked = await IsBlocked(friend.id, currentUser.uid);
+    const userBlocked = await IsBlocked(currUser.uid, friend.id);
+    const friendBlocked = await IsBlocked(friend.id, currUser.uid);
 
     if (userBlocked) {
       toast.error("You need to unblock the user before sending a message.");
@@ -83,21 +110,21 @@ const Chat = ({ friend }) => {
     if (image) {
       setUploading(true);
       try {
-        const imageRef = ref(
-          storage,
-          `images/${currentUser.uid}/${image.name}`
-        );
+        const imageRef = ref(storage, `images/${currUser.uid}/${image.name}`);
         await uploadBytes(imageRef, image);
         const imageUrl = await getDownloadURL(imageRef);
-
-        sendMessage(currentUser.uid, friend.id, null, imageUrl);
+        sendMessage(currUser.uid, friend.id, null, imageUrl);
         setImage(null);
+        setNewMessage("");
+        stopTyping(currUser.uid, friend.id);
+        setIsTyping(false);
       } catch (error) {
         toast.error("Image upload failed. Please try again.");
       } finally {
         setUploading(false);
       }
     } else {
+      sendMessage(currUser.uid, friend.id, newMessage, "");
       const translatedMessage = await translateText(newMessage, "ne");
       console.log("translatedMessage", translatedMessage);
       sendMessage(
@@ -107,6 +134,8 @@ const Chat = ({ friend }) => {
         ""
       );
       setNewMessage("");
+      stopTyping(currUser.uid, friend.id); // Stop typing status after message is sent
+      setIsTyping(false);
     }
   };
 
@@ -122,7 +151,7 @@ const Chat = ({ friend }) => {
       isLoadingMore.current = true;
       setSpinnerLoad(true);
       const previousScrollHeight = chatContainerRef.current.scrollHeight;
-      loadMoreMessages(currentUser, friend);
+      loadMoreMessages(currUser, friend);
 
       setTimeout(() => {
         const currentScrollHeight = chatContainerRef.current.scrollHeight;
@@ -159,11 +188,11 @@ const Chat = ({ friend }) => {
         {messages?.map((message, index) => (
           <div
             className={`message ${
-              message.senderId === currentUser.uid ? "own" : ""
+              message.senderId === currUser.uid ? "own" : ""
             }`}
             key={index}
           >
-            {message.senderId !== currentUser.uid && (
+            {message.senderId !== currUser.uid && (
               <img src={friend?.avatar || "./avatar.png"} />
             )}
             <div className="texts">
@@ -173,12 +202,26 @@ const Chat = ({ friend }) => {
                 <p>{message.text}</p>
               )}
               <span>
-              {new Date(message.timestamp).toLocaleDateString()}{" "}
-              {new Date(message.timestamp).toLocaleTimeString()}
+                {new Date(message.timestamp).toLocaleDateString()}{" "}
+                {new Date(message.timestamp).toLocaleTimeString()}
               </span>
             </div>
           </div>
         ))}
+      </div>
+      <div className="typing-status">
+        {/* <span>{friend.username}</span> */}
+        {typingStatus?.isTyping &&
+          typingStatus.typistUsername === friend.username && (
+            <div className="typing-indicator">
+              <span className="typing-text">{friend.username} is typing</span>
+              <div className="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          )}
       </div>
       <form
         onSubmit={(e) => {
@@ -214,7 +257,10 @@ const Chat = ({ friend }) => {
             type="text"
             placeholder="type a message..."
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              handleTyping();
+            }}
             disabled={uploading}
           />
           {image && <p>{image.name}</p>}
