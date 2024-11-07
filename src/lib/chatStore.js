@@ -21,12 +21,14 @@ const createMessage = ({
   senderId,
   receiverId,
   text,
+  translatedText,
   timestamp,
   imageUrl,
 }) => ({
   senderId, // The ID of the user sending the message
   receiverId, // The ID of the user receiving the message
   text, // The message content
+  translatedText, //translated message content
   timestamp, // The time the message was sent
   imageUrl, // The image url sent
 });
@@ -131,8 +133,10 @@ const useChatStore = create((set, get) => ({
     set({ messages: [], lastVisible: null }); // Reset pagination when resetting messages
   },
 
-  sendMessage: async (senderId, receiverId, text, imageUrl) => {
+  sendMessage: async (senderId, receiverId, text, translatedText, imageUrl) => {
     if (text !== null && text.trim() === "") return;
+    if (translatedText !== null && translatedText.trim() === "") return;
+
     console.log(imageUrl);
 
     const messagesRef = collection(database, "messages");
@@ -145,6 +149,7 @@ const useChatStore = create((set, get) => ({
         senderId,
         receiverId,
         text,
+        translatedText,
         imageUrl,
         timestamp: new Date().toISOString(),
       });
@@ -153,6 +158,8 @@ const useChatStore = create((set, get) => ({
       //Update lastMessage for both sender and receiver documents
       const lastMessageData = {
         text: message?.text,
+        translatedText: message?.translatedText,
+        senderId: message?.senderId,
         timestamp: message?.timestamp,
         imageUrl,
       };

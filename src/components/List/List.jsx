@@ -83,7 +83,7 @@ const List = () => {
       {filteredFriends?.length > 0 ? (
         <div className="listContainer">
           {filteredFriends.map((friend, index) => (
-            <UserList key={index} user={friend} />
+            <UserList key={index} user={friend} currentUser={currentUser} />
           ))}
         </div>
       ) : input ? (
