@@ -16,6 +16,7 @@ import {
   doc,
   setDoc,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 
 // Define a Message type
@@ -221,6 +222,32 @@ const useChatStore = create((set, get) => ({
       console.error("Error sending message:", error);
       // Set the error state
       set({ error: "Failed to send message. Please try again." });
+    }
+  },
+
+  // Deleting message
+  deleteMessage: async(messageId) => {
+    try{
+      await deleteDoc(doc(database, "messages", messageId));
+      set((state) => ({
+        messages: state.messages.filter((message) => message.id !== messageId)
+      }));
+    } catch(error){
+      console.error("Error deleting message:", error);
+    }
+  },
+
+  //Editing message
+  editMessage: async(messageId, newText) => {
+    try{
+      await updateDoc(doc(database, "messages", messageId, {text: newText}));
+      set((state) => ({
+        messages: state.messages.map((message) =>
+        message.id === messageId ? {... message, text: newText } : message
+        ),
+      }));
+    } catch (error){
+      console.error("Error editing message:", error);
     }
   },
 }));
