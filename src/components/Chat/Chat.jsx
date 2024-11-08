@@ -174,7 +174,9 @@ const Chat = ({ friend }) => {
                 <p>
                   {message?.senderId === currentUser?.uid
                     ? message?.text
-                    : message?.translatedText}
+                    : message?.translatedText
+                    ? message.translatedText
+                    : message?.text}
                 </p>
               )}
               <span>
