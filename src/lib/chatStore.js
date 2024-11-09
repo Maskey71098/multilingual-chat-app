@@ -14,6 +14,9 @@ import {
   startAfter,
   writeBatch,
   doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 
 // Define a Message type
@@ -38,6 +41,57 @@ const useChatStore = create((set, get) => ({
   user: null,
   lastVisible: null, // Track the last fetched message for pagination
   error: null, // State to hold error messages
+  typingStatus: {},
+
+  setTypingStatus: async (userid, friendId, typistUsername) => {
+    const userTypingDocId = `${userid}_${friendId}`;
+    const friendTypingDocId = `${friendId}_${userid}`;
+
+    const updates = {
+      typistUsername,
+      isTyping: true,
+    };
+
+    await setDoc(doc(database, "typingStatus", userTypingDocId), updates, {
+      merge: true,
+    });
+    await setDoc(doc(database, "typingStatus", friendTypingDocId), updates, {
+      merge: true,
+    });
+  },
+
+  // Function to stop typing with delay
+  stopTyping: (userid, friendId) => {
+    setTimeout(async () => {
+      const userTypingDocId = `${userid}_${friendId}`;
+      const friendTypingDocId = `${friendId}_${userid}`;
+
+      const updates = {
+        typistUsername: "",
+        isTyping: false,
+      };
+
+      await setDoc(doc(database, "typingStatus", userTypingDocId), updates, {
+        merge: true,
+      });
+      await setDoc(doc(database, "typingStatus", friendTypingDocId), updates, {
+        merge: true,
+      });
+    }, 2000); // 2-second delay
+  },
+
+  listenToTypingStatus: (userid, friendId) => {
+    const typingStatusRef = doc(
+      database,
+      "typingStatus",
+      `${friendId}_${userid}`
+    );
+    onSnapshot(typingStatusRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        set({ typingStatus: docSnapshot.data() });
+      }
+    });
+  },
 
   addMessage: (message) =>
     set((state) => ({
@@ -177,6 +231,32 @@ const useChatStore = create((set, get) => ({
       console.error("Error sending message:", error);
       // Set the error state
       set({ error: "Failed to send message. Please try again." });
+    }
+  },
+
+  // Deleting message
+  deleteMessage: async (messageId) => {
+    try {
+      await deleteDoc(doc(database, "messages", messageId));
+      set((state) => ({
+        messages: state.messages.filter((message) => message.id !== messageId),
+      }));
+    } catch (error) {
+      console.error("Error deleting message:", error);
+    }
+  },
+
+  //Editing message
+  editMessage: async (messageId, newText) => {
+    try {
+      await updateDoc(doc(database, "messages", messageId, { text: newText }));
+      set((state) => ({
+        messages: state.messages.map((message) =>
+          message.id === messageId ? { ...message, text: newText } : message
+        ),
+      }));
+    } catch (error) {
+      console.error("Error editing message:", error);
     }
   },
 }));
