@@ -113,7 +113,8 @@ const Chat = ({ friend }) => {
         const imageRef = ref(storage, `images/${currUser.uid}/${image.name}`);
         await uploadBytes(imageRef, image);
         const imageUrl = await getDownloadURL(imageRef);
-        sendMessage(currUser.uid, friend.id, null, imageUrl);
+
+        sendMessage(currUser.uid, friend.id, null, null, imageUrl);
         setImage(null);
         setNewMessage("");
         stopTyping(currUser.uid, friend.id);
@@ -124,12 +125,12 @@ const Chat = ({ friend }) => {
         setUploading(false);
       }
     } else {
-      sendMessage(currUser.uid, friend.id, newMessage, "");
       const translatedMessage = await translateText(newMessage, "ne");
       console.log("translatedMessage", translatedMessage);
       sendMessage(
-        currentUser.uid,
+        currUser.uid,
         friend.id,
+        newMessage,
         translatedMessage ? translatedMessage : newMessage,
         ""
       );
@@ -199,7 +200,13 @@ const Chat = ({ friend }) => {
               {message.imageUrl ? (
                 <img src={message.imageUrl} alt="Sent" className="sent-image" />
               ) : (
-                <p>{message.text}</p>
+                <p>
+                  {message?.senderId === currUser?.uid
+                    ? message?.text
+                    : message?.translatedText
+                    ? message.translatedText
+                    : message?.text}
+                </p>
               )}
               <span>
                 {new Date(message.timestamp).toLocaleDateString()}{" "}
