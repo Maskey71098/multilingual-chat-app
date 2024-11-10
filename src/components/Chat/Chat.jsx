@@ -11,6 +11,7 @@ import { useUserStore } from "../../lib/userStore";
 import translateText from "../../utils/googleTranslate";
 
 const Chat = ({ friend }) => {
+  const [setMessages] = useState([]);
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -18,6 +19,9 @@ const Chat = ({ friend }) => {
   const { currentUser } = useUserStore();
   const [spinnerLoad, setSpinnerLoad] = useState(false);
   const { activeFriend } = useFriendsStore();
+  const [dropdownMessageId, setDropdownMessageId] = useState(null);
+  const [editMessageId, setEditMessageId] = useState(null); 
+  const [editMessageText, setEditMessageText] = useState("");
   const chatContainerRef = useRef(null);
   const isLoadingMore = useRef(false);
   const audioRef = useRef(new Audio("/notification.mp3"));
@@ -34,12 +38,45 @@ const Chat = ({ friend }) => {
     stopTyping,
     listenToTypingStatus,
     typingStatus,
+    deleteMessage,
+    editMessage,
   } = useChatStore();
   const currUser = auth.currentUser;
 
   const handleEmoji = (e) => {
     setNewMessage((prev) => prev + e.emoji);
     setOpen(false);
+  };
+
+  const handleLeftClick = (e, messageId) => {
+    e.preventDefault();
+    setDropdownMessageId((prev) => (prev === messageId ? null : messageId)); // Toggle dropdown
+  };
+
+  const handleDelete = (messageId) => {
+    deleteMessage(messageId);
+    setDropdownMessageId(null); // Hide dropdown after deleting
+  };
+
+  const handleEdit = (messageId, messageText) => {
+    setEditMessageId(messageId); // Set the message ID to be edited
+    setEditMessageText(messageText); // Populate the input with current message text
+    setDropdownMessageId(null); // Hide dropdown
+  };
+
+  const handleUpdateMessage = () => {
+    if (editMessageId) {
+      editMessage(editMessageId, editMessageText); // Call editMessage function
+      setEditMessageId(null); // Clear edit mode
+      setEditMessageText(""); // Clear input
+    }
+  };
+
+  const handleEditKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleUpdateMessage();
+    }
   };
 
   const scrollToBottom = () => {
@@ -199,27 +236,63 @@ const Chat = ({ friend }) => {
               message.senderId === currUser.uid ? "own" : ""
             }`}
             key={index}
+            onClick={(e) => handleLeftClick(e, message.id)}
           >
             {message.senderId !== currUser.uid && (
               <img src={friend?.avatar || "./avatar.png"} />
             )}
             <div className="texts">
-              {message.imageUrl ? (
-                <img src={message.imageUrl} alt="Sent" className="sent-image" />
-              ) : (
-                <p>
-                  {message?.senderId === currUser?.uid
-                    ? message?.text
-                    : message?.translatedText
-                    ? message.translatedText
-                    : message?.text}
-                </p>
+            {message.imageUrl ? (
+              <img src={message.imageUrl} alt="Sent" className="sent-image" />
+            ) : editMessageId === message.id ? (
+              <input
+                type="text"
+                value={editMessageText}
+                onChange={(e) => setEditMessageText(e.target.value)}
+                onBlur={handleUpdateMessage}
+              />
+            ) : (
+              <p>
+                {message.deleted ? (
+                  <i>Message deleted</i>
+                ) : message?.senderId === currUser?.uid && message?.translatedText ? (
+                  message.translatedText
+                ) : (
+                  message?.text
+                )}
+              </p>
+            )}
+            <span>
+              {new Date(message.timestamp).toLocaleDateString()}{" "}
+              {new Date(message.timestamp).toLocaleTimeString()}
+              {message.editedAt && !message.deleted && (
+                <span style={{ fontSize: "small", fontStyle: "italic", marginLeft: "5px" }}>
+                  Edited
+                </span>
               )}
-              <span>
-                {new Date(message.timestamp).toLocaleDateString()}{" "}
-                {new Date(message.timestamp).toLocaleTimeString()}
-              </span>
-            </div>
+              {message.senderId === currUser.uid && dropdownMessageId === message.id && (
+                <div className="dropdown">
+                  {!message.deleted && (
+                    <>
+                      <button
+                        className="delete-button"
+                        onClick={() => handleDelete(message.id)}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        className="edit-button"
+                        onClick={() => handleEdit(message.id, message.text)}
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </span>
+          </div>
+
           </div>
         ))}
       </div>
