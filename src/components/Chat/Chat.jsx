@@ -4,7 +4,7 @@ import "./chat.css";
 import EmojiPicker from "emoji-picker-react";
 import { toast } from "react-toastify";
 import { auth, storage } from "../../lib/firebase";
-import { IsBlocked } from "../../lib/friendStore";
+import useFriendsStore, { IsBlocked } from "../../lib/friendStore";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useUserStore } from "../../lib/userStore";
@@ -17,7 +17,7 @@ const Chat = ({ friend }) => {
   const [newMessage, setNewMessage] = useState("");
   const { currentUser } = useUserStore();
   const [spinnerLoad, setSpinnerLoad] = useState(false);
-
+  const { activeFriend } = useFriendsStore();
   const chatContainerRef = useRef(null);
   const isLoadingMore = useRef(false);
   const audioRef = useRef(new Audio("/notification.mp3"));
@@ -125,8 +125,15 @@ const Chat = ({ friend }) => {
         setUploading(false);
       }
     } else {
-      const translatedMessage = await translateText(newMessage, "ne");
-      console.log("translatedMessage", translatedMessage);
+      let translatedMessage;
+      console.log(activeFriend?.language);
+      if (activeFriend?.language) {
+        translatedMessage = await translateText(
+          newMessage,
+          activeFriend?.language
+        );
+        console.log("translatedMessage", translatedMessage);
+      }
       sendMessage(
         currUser.uid,
         friend.id,
