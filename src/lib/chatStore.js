@@ -236,29 +236,47 @@ const useChatStore = create((set, get) => ({
 
   // Deleting message
   deleteMessage: async (messageId) => {
+    const messageRef = doc(database, "messages", messageId);
+
     try {
-      await deleteDoc(doc(database, "messages", messageId));
+      await deleteDoc(messageRef);
+
       set((state) => ({
         messages: state.messages.filter((message) => message.id !== messageId),
       }));
+      console.log("Message deleted successfully");
     } catch (error) {
       console.error("Error deleting message:", error);
+      set({ error: "Failed to delete message. Please try again." });
     }
   },
 
-  //Editing message
-  editMessage: async (messageId, newText) => {
-    try {
-      await updateDoc(doc(database, "messages", messageId, { text: newText }));
-      set((state) => ({
-        messages: state.messages.map((message) =>
-          message.id === messageId ? { ...message, text: newText } : message
-        ),
-      }));
-    } catch (error) {
-      console.error("Error editing message:", error);
-    }
-  },
+  // Editing message
+editMessage: async (messageId, newText) => {
+  const messageRef = doc(database, "messages", messageId);
+
+  try {
+    // Update the message text in Firestore
+    await updateDoc(messageRef, {
+      text: newText,
+      editedAt: new Date().toISOString(), // Optional: add an edited timestamp
+    });
+
+    // Update the local messages state with the edited message
+    set((state) => ({
+      messages: state.messages.map((message) =>
+        message.id === messageId
+          ? { ...message, text: newText, editedAt: new Date().toISOString() }
+          : message
+      ),
+    }));
+    
+    console.log("Message updated successfully");
+  } catch (error) {
+    console.error("Error updating message:", error);
+    set({ error: "Failed to update message. Please try again." });
+  }
+},
 }));
 
 export default useChatStore;
