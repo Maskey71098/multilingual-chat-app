@@ -13,6 +13,7 @@ import Row from "react-bootstrap/Row";
 import { doc, updateDoc, runTransaction } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, db, storage, googleProvider } from "../../lib/firebase";
+import { useUserStore } from "../../lib/userStore";
 
 const List = () => {
   const { Formik } = formik;
@@ -25,6 +26,7 @@ const List = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const currentUser = auth.currentUser;
+  const { currentUser: currUser } = useUserStore();
 
   const schema = yup.object().shape({
     username: yup.string().required("Username is required"),
@@ -39,6 +41,7 @@ const List = () => {
           !value || (value && ["image/jpeg", "image/png"].includes(value.type))
         ); // Accept JPG or PNG files
       }),
+    language: yup.string(),
   });
 
   const showEditUser = () => {
@@ -48,7 +51,7 @@ const List = () => {
   const handleUpdate = async (values) => {
     setError(null);
     setSuccess(false);
-    const { username, avatar } = values;
+    const { username, avatar, language } = values;
 
     try {
       let avatarURL = null;
@@ -65,6 +68,9 @@ const List = () => {
       };
       if (avatarURL) {
         updateData.avatar = avatarURL;
+      }
+      if (language) {
+        updateData.language = language;
       }
 
       await updateDoc(doc(db, "users", currentUser.uid), updateData);
@@ -108,9 +114,10 @@ const List = () => {
               validationSchema={schema}
               onSubmit={handleUpdate}
               initialValues={{
-                username: "",
+                username: currUser?.username ? currUser?.username : "",
                 email: "",
                 password: "",
+                language: currUser?.language ? currUser?.language : "",
                 avatar: null,
               }}
             >
@@ -156,6 +163,32 @@ const List = () => {
                       />
                       <Form.Control.Feedback type="invalid">
                         {errors.avatar}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Row>
+                  <Row className="mb-3">
+                    <Form.Group controlId="validationFormik09">
+                      <Form.Label>Preferred Language</Form.Label>
+                      <Form.Select
+                        name="language"
+                        value={values.language}
+                        onChange={handleChange}
+                        isInvalid={!!errors.language}
+                      >
+                        <option value="" disabled>
+                          Select your language
+                        </option>
+                        <option value="en">English</option>
+                        <option value="ne">Nepali</option>
+                        <option value="es">Spanish</option>
+                        <option value="it">Italian</option>
+                        <option value="fr">French</option>
+                        <option value="ar">Arabic</option>
+
+                        {/* Add more options as needed */}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.language}
                       </Form.Control.Feedback>
                     </Form.Group>
                   </Row>
