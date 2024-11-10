@@ -20,7 +20,7 @@ const Chat = ({ friend }) => {
   const [spinnerLoad, setSpinnerLoad] = useState(false);
   const { activeFriend } = useFriendsStore();
   const [dropdownMessageId, setDropdownMessageId] = useState(null);
-  const [editMessageId, setEditMessageId] = useState(null); 
+  const [editMessageId, setEditMessageId] = useState(null);
   const [editMessageText, setEditMessageText] = useState("");
   const chatContainerRef = useRef(null);
   const isLoadingMore = useRef(false);
@@ -242,57 +242,64 @@ const Chat = ({ friend }) => {
               <img src={friend?.avatar || "./avatar.png"} />
             )}
             <div className="texts">
-            {message.imageUrl ? (
-              <img src={message.imageUrl} alt="Sent" className="sent-image" />
-            ) : editMessageId === message.id ? (
-              <input
-                type="text"
-                value={editMessageText}
-                onChange={(e) => setEditMessageText(e.target.value)}
-                onBlur={handleUpdateMessage}
-              />
-            ) : (
-              <p>
-                {message.deleted ? (
-                  <i>Message deleted</i>
-                ) : message?.senderId === currUser?.uid && message?.translatedText ? (
-                  message.translatedText
-                ) : (
-                  message?.text
-                )}
-              </p>
-            )}
-            <span>
-              {new Date(message.timestamp).toLocaleDateString()}{" "}
-              {new Date(message.timestamp).toLocaleTimeString()}
-              {message.editedAt && !message.deleted && (
-                <span style={{ fontSize: "small", fontStyle: "italic", marginLeft: "5px" }}>
-                  Edited
-                </span>
-              )}
-              {message.senderId === currUser.uid && dropdownMessageId === message.id && (
-                <div className="dropdown">
-                  {!message.deleted && (
-                    <>
-                      <button
-                        className="delete-button"
-                        onClick={() => handleDelete(message.id)}
-                      >
-                        Delete
-                      </button>
-                      <button
-                        className="edit-button"
-                        onClick={() => handleEdit(message.id, message.text)}
-                      >
-                        Edit
-                      </button>
-                    </>
+              {message.imageUrl ? (
+                <img src={message.imageUrl} alt="Sent" className="sent-image" />
+              ) : editMessageId === message.id ? (
+                <input
+                  type="text"
+                  value={editMessageText}
+                  onChange={(e) => setEditMessageText(e.target.value)}
+                  onBlur={handleUpdateMessage}
+                />
+              ) : (
+                <p>
+                  {message.deleted ? (
+                    <i>Message deleted</i>
+                  ) : message?.receiverId === currUser?.uid &&
+                    message?.translatedText ? (
+                    message.translatedText
+                  ) : (
+                    message?.text
                   )}
-                </div>
+                </p>
               )}
-            </span>
-          </div>
-
+              <span>
+                {new Date(message.timestamp).toLocaleDateString()}{" "}
+                {new Date(message.timestamp).toLocaleTimeString()}
+                {message.editedAt && !message.deleted && (
+                  <span
+                    style={{
+                      fontSize: "small",
+                      fontStyle: "italic",
+                      marginLeft: "5px",
+                    }}
+                  >
+                    Edited
+                  </span>
+                )}
+                {message.senderId === currUser.uid &&
+                  dropdownMessageId === message.id && (
+                    <div className="dropdown">
+                      {!message.deleted && (
+                        <>
+                          <button
+                            className="delete-button"
+                            onClick={() => handleDelete(message.id)}
+                          >
+                            Delete
+                          </button>
+                          <button
+                            className="edit-button"
+                            onClick={() => handleEdit(message.id, message.text)}
+                          >
+                            Edit
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+              </span>
+            </div>
           </div>
         ))}
       </div>
