@@ -10,7 +10,6 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import List from "./components/List/List";
 import useFriendsStore from "./lib/friendStore";
-
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
   faMagnifyingGlass,
@@ -26,7 +25,7 @@ import {
   faPhotoFilm,
 } from "@fortawesome/free-solid-svg-icons";
 
-const App = () => {
+const App = () => { 
   const { currentUser, isLoading, fetchUserInfo } = useUserStore();
   const { activeFriend, loadFriends } = useFriendsStore();
 
@@ -41,7 +40,7 @@ const App = () => {
     faPlus,
     faGear,
     faPhotoFilm,
-    faLock
+    faLock  
   );
 
   useEffect(() => {
