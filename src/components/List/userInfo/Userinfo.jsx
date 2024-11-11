@@ -3,15 +3,13 @@ import { useUserStore } from "../../../lib/userStore";
 import { useState } from "react";
 import AddUser from "../chatList/AddUser";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 const Userinfo = ({ showEditUser }) => {
   const { currentUser } = useUserStore();
   const [addUser, setAddUser] = useState(false);
-  
+
   const handleAddClick = () => {
     setAddUser(!addUser);
   };
-
   return (
     <div className="userInfo">
       <div className="user">
@@ -25,12 +23,7 @@ const Userinfo = ({ showEditUser }) => {
           style={{ cursor: "pointer" }}
           onClick={showEditUser}
         />
-        <img src="./invite.png" alt="" />
-        <FontAwesomeIcon
-          icon="fa-solid fa-user-plus" 
-          style={{ cursor: "pointer" }}
-         
-        />
+       
         <FontAwesomeIcon
           icon="fa-solid fa-plus"
           style={{ cursor: "pointer" }}

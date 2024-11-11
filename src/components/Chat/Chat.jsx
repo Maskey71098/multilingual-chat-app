@@ -14,7 +14,7 @@ const Chat = ({ friend }) => {
   const [uploading, setUploading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [spinnerLoad, setSpinnerLoad] = useState(false);
-  const [pinnedMessages, setPinnedMessages] = useState({}); // Pinned messages by friend ID
+  const [pinnedMessages, setPinnedMessages] = useState({}); 
 
   const chatContainerRef = useRef(null);
   const messageRefs = useRef({}); // Refs for each message for locating pinned messages
