@@ -14,6 +14,9 @@ import {
   startAfter,
   writeBatch,
   doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 
 // Define a Message type
@@ -21,12 +24,14 @@ const createMessage = ({
   senderId,
   receiverId,
   text,
+  translatedText,
   timestamp,
   imageUrl,
 }) => ({
   senderId, // The ID of the user sending the message
   receiverId, // The ID of the user receiving the message
   text, // The message content
+  translatedText, //translated message content
   timestamp, // The time the message was sent
   imageUrl, // The image url sent
 });
@@ -36,6 +41,57 @@ const useChatStore = create((set, get) => ({
   user: null,
   lastVisible: null, // Track the last fetched message for pagination
   error: null, // State to hold error messages
+  typingStatus: {},
+
+  setTypingStatus: async (userid, friendId, typistUsername) => {
+    const userTypingDocId = `${userid}_${friendId}`;
+    const friendTypingDocId = `${friendId}_${userid}`;
+
+    const updates = {
+      typistUsername,
+      isTyping: true,
+    };
+
+    await setDoc(doc(database, "typingStatus", userTypingDocId), updates, {
+      merge: true,
+    });
+    await setDoc(doc(database, "typingStatus", friendTypingDocId), updates, {
+      merge: true,
+    });
+  },
+
+  // Function to stop typing with delay
+  stopTyping: (userid, friendId) => {
+    setTimeout(async () => {
+      const userTypingDocId = `${userid}_${friendId}`;
+      const friendTypingDocId = `${friendId}_${userid}`;
+
+      const updates = {
+        typistUsername: "",
+        isTyping: false,
+      };
+
+      await setDoc(doc(database, "typingStatus", userTypingDocId), updates, {
+        merge: true,
+      });
+      await setDoc(doc(database, "typingStatus", friendTypingDocId), updates, {
+        merge: true,
+      });
+    }, 2000); // 2-second delay
+  },
+
+  listenToTypingStatus: (userid, friendId) => {
+    const typingStatusRef = doc(
+      database,
+      "typingStatus",
+      `${friendId}_${userid}`
+    );
+    onSnapshot(typingStatusRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        set({ typingStatus: docSnapshot.data() });
+      }
+    });
+  },
 
   addMessage: (message) =>
     set((state) => ({
@@ -131,8 +187,10 @@ const useChatStore = create((set, get) => ({
     set({ messages: [], lastVisible: null }); // Reset pagination when resetting messages
   },
 
-  sendMessage: async (senderId, receiverId, text, imageUrl) => {
+  sendMessage: async (senderId, receiverId, text, translatedText, imageUrl) => {
     if (text !== null && text.trim() === "") return;
+    if (translatedText !== null && translatedText.trim() === "") return;
+
     console.log(imageUrl);
 
     const messagesRef = collection(database, "messages");
@@ -145,6 +203,7 @@ const useChatStore = create((set, get) => ({
         senderId,
         receiverId,
         text,
+        translatedText,
         imageUrl,
         timestamp: new Date().toISOString(),
       });
@@ -153,6 +212,8 @@ const useChatStore = create((set, get) => ({
       //Update lastMessage for both sender and receiver documents
       const lastMessageData = {
         text: message?.text,
+        translatedText: message?.translatedText,
+        senderId: message?.senderId,
         timestamp: message?.timestamp,
         imageUrl,
       };
@@ -172,6 +233,50 @@ const useChatStore = create((set, get) => ({
       set({ error: "Failed to send message. Please try again." });
     }
   },
+
+  // Deleting message
+  deleteMessage: async (messageId) => {
+    const messageRef = doc(database, "messages", messageId);
+
+    try {
+      await deleteDoc(messageRef);
+
+      set((state) => ({
+        messages: state.messages.filter((message) => message.id !== messageId),
+      }));
+      console.log("Message deleted successfully");
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      set({ error: "Failed to delete message. Please try again." });
+    }
+  },
+
+  // Editing message
+editMessage: async (messageId, newText) => {
+  const messageRef = doc(database, "messages", messageId);
+
+  try {
+    // Update the message text in Firestore
+    await updateDoc(messageRef, {
+      text: newText,
+      editedAt: new Date().toISOString(), // Optional: add an edited timestamp
+    });
+
+    // Update the local messages state with the edited message
+    set((state) => ({
+      messages: state.messages.map((message) =>
+        message.id === messageId
+          ? { ...message, text: newText, editedAt: new Date().toISOString() }
+          : message
+      ),
+    }));
+    
+    console.log("Message updated successfully");
+  } catch (error) {
+    console.error("Error updating message:", error);
+    set({ error: "Failed to update message. Please try again." });
+  }
+},
 }));
 
 export default useChatStore;
