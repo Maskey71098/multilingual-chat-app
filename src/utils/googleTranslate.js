@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_KEY = import.meta.env.VITE_TRANSLATION_API_KEY;
+API_KEY = import.meta.env.VITE_TRANSLATION_API_KEY;
 const API_URL = "https://translation.googleapis.com/language/translate/v2";
 
 const translateText = async (text, targetLanguage) => {

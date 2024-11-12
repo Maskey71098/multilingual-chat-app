@@ -21,7 +21,8 @@ const Chat = ({ friend }) => {
   const { activeFriend } = useFriendsStore();
   const [dropdownMessageId, setDropdownMessageId] = useState(null);
   const [editMessageId, setEditMessageId] = useState(null);
-  const [editMessageText, setEditMessageText] = useState("");  const [pinnedMessages, setPinnedMessages] = useState({}); 
+  const [editMessageText, setEditMessageText] = useState("");  
+  const [pinnedMessages, setPinnedMessages] = useState({}); 
 
   const chatContainerRef = useRef(null);
   const messageRefs = useRef({}); // Refs for each message for locating pinned messages
@@ -280,11 +281,11 @@ const Chat = ({ friend }) => {
             className={`message ${
               message.senderId === currUser.uid ? "own" : ""
             }`}
-            className={`message ${message.senderId === currentUser.uid ? "own" : ""}`}
+           
             key={index}
             onClick={(e) => handleLeftClick(e, message.id)}
             ref={(el) => (messageRefs.current[message.id] = el)}
-            onClick={() => handlePinMessage(message)}
+           
           >
             {message.senderId !== currentUser.uid && (
               <img src={friend?.avatar || "./avatar.png"} alt="Sender Avatar" />

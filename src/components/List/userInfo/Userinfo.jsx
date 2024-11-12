@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 const Userinfo = ({ showEditUser }) => {
   const { currentUser } = useUserStore();
   const [addUser, setAddUser] = useState(false);
-
   const handleAddClick = () => {
     setAddUser(!addUser);
   };
