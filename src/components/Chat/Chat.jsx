@@ -11,6 +11,7 @@ import { useUserStore } from "../../lib/userStore";
 import translateText from "../../utils/googleTranslate";
 
 const Chat = ({ friend }) => {
+  const [ pinnedMessagesMap, setPinnedMessagesMap] = useState({});
   const [pinnedMessages, setPinnedMessages] = useState([]);
   const [setMessages] = useState([]);
   const [open, setOpen] = useState(false);
@@ -66,6 +67,12 @@ const Chat = ({ friend }) => {
     setEditMessageText(messageText);
     setDropdownMessageId(null);
   };
+  useEffect(() => {
+    if (friend) {
+      loadInitialMessages(currUser, friend);
+      setPinnedMessages(pinnedMessagesMap[friend.id] || []);
+    }
+  }, [currUser, friend, pinnedMessagesMap]);
 
   const handlePin = (message) => {
     setPinnedMessages((prevPinnedMessages) => {
