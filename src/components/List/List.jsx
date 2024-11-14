@@ -184,6 +184,8 @@ const List = () => {
                         <option value="it">Italian</option>
                         <option value="fr">French</option>
                         <option value="ar">Arabic</option>
+                        <option value="zh-TW">Chinese</option>
+                        <option value="hi">Hindi</option>
 
                         {/* Add more options as needed */}
                       </Form.Select>
