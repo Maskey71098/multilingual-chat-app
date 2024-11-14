@@ -11,6 +11,8 @@ import { useUserStore } from "../../lib/userStore";
 import translateText from "../../utils/googleTranslate";
 
 const Chat = ({ friend }) => {
+  const [ pinnedMessagesMap, setPinnedMessagesMap] = useState({});
+  const [pinnedMessages, setPinnedMessages] = useState([]);
   const [setMessages] = useState([]);
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState(null);
@@ -25,7 +27,7 @@ const Chat = ({ friend }) => {
   const chatContainerRef = useRef(null);
   const isLoadingMore = useRef(false);
   const audioRef = useRef(new Audio("/notification.mp3"));
-  const lastMessageRef = useRef(null); // Track the last message ID or timestamp
+  const lastMessageRef = useRef(null);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeout = useRef(null);
 
@@ -43,6 +45,8 @@ const Chat = ({ friend }) => {
   } = useChatStore();
   const currUser = auth.currentUser;
 
+  const messageRefs = useRef({}); // Refs for each message
+
   const handleEmoji = (e) => {
     setNewMessage((prev) => prev + e.emoji);
     setOpen(false);
@@ -50,25 +54,41 @@ const Chat = ({ friend }) => {
 
   const handleLeftClick = (e, messageId) => {
     e.preventDefault();
-    setDropdownMessageId((prev) => (prev === messageId ? null : messageId)); // Toggle dropdown
+    setDropdownMessageId((prev) => (prev === messageId ? null : messageId));
   };
 
   const handleDelete = (messageId) => {
     deleteMessage(messageId);
-    setDropdownMessageId(null); // Hide dropdown after deleting
+    setDropdownMessageId(null);
   };
 
   const handleEdit = (messageId, messageText) => {
-    setEditMessageId(messageId); // Set the message ID to be edited
-    setEditMessageText(messageText); // Populate the input with current message text
-    setDropdownMessageId(null); // Hide dropdown
+    setEditMessageId(messageId);
+    setEditMessageText(messageText);
+    setDropdownMessageId(null);
+  };
+  useEffect(() => {
+    if (friend) {
+      loadInitialMessages(currUser, friend);
+      setPinnedMessages(pinnedMessagesMap[friend.id] || []);
+    }
+  }, [currUser, friend, pinnedMessagesMap]);
+
+  const handlePin = (message) => {
+    setPinnedMessages((prevPinnedMessages) => {
+      if (prevPinnedMessages.some((pinned) => pinned.id === message.id)) {
+        return prevPinnedMessages.filter((pinned) => pinned.id !== message.id);
+      }
+      return [...prevPinnedMessages, message];
+    });
+    setDropdownMessageId(null);
   };
 
   const handleUpdateMessage = () => {
     if (editMessageId) {
-      editMessage(editMessageId, editMessageText); // Call editMessage function
-      setEditMessageId(null); // Clear edit mode
-      setEditMessageText(""); // Clear input
+      editMessage(editMessageId, editMessageText);
+      setEditMessageId(null);
+      setEditMessageText("");
     }
   };
 
@@ -81,8 +101,15 @@ const Chat = ({ friend }) => {
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
+
+  const scrollToMessage = (messageId) => {
+    const messageElement = messageRefs.current[messageId];
+    if (messageElement && chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
+        messageElement.offsetTop - chatContainerRef.current.offsetTop;
     }
   };
 
@@ -99,19 +126,16 @@ const Chat = ({ friend }) => {
     }
   }, [messages]);
 
-  // Play sound and show notification on new message
   useEffect(() => {
     if (messages.length > 0) {
       const latestMessage = messages[messages.length - 1];
-
-      // Check if the latest message is from the friend and different from the last tracked message
       if (
         latestMessage.senderId !== currUser.uid &&
         latestMessage.timestamp !== lastMessageRef.current
       ) {
         audioRef.current.play();
         toast.info("New message received!");
-        lastMessageRef.current = latestMessage.timestamp; // Update last message ref
+        lastMessageRef.current = latestMessage.timestamp;
       }
     }
   }, [messages]);
@@ -122,12 +146,11 @@ const Chat = ({ friend }) => {
       setIsTyping(true);
     }
 
-    // Reset typing timeout each time the user types
     clearTimeout(typingTimeout.current);
     typingTimeout.current = setTimeout(() => {
       stopTyping(currUser.uid, friend.id);
       setIsTyping(false);
-    }, 1500); // Adjust the delay as needed
+    }, 1500);
   };
 
   const handleSendMessage = async () => {
@@ -163,23 +186,18 @@ const Chat = ({ friend }) => {
       }
     } else {
       let translatedMessage;
-      console.log(activeFriend?.language);
       if (activeFriend?.language) {
-        translatedMessage = await translateText(
-          newMessage,
-          activeFriend?.language
-        );
-        console.log("translatedMessage", translatedMessage);
+        translatedMessage = await translateText(newMessage, activeFriend?.language);
       }
       sendMessage(
         currUser.uid,
         friend.id,
         newMessage,
-        translatedMessage ? translatedMessage : newMessage,
+        translatedMessage || newMessage,
         ""
       );
       setNewMessage("");
-      stopTyping(currUser.uid, friend.id); // Stop typing status after message is sent
+      stopTyping(currUser.uid, friend.id);
       setIsTyping(false);
     }
   };
@@ -224,11 +242,41 @@ const Chat = ({ friend }) => {
           <FontAwesomeIcon icon="fa-solid fa-circle-info" size="lg" />
         </div>
       </div>
+      
       {spinnerLoad && (
         <div className="d-flex justify-content-center">
           <div className="spinner-border" role="status"></div>
         </div>
       )}
+
+      {/* Display Pinned Messages */}
+      {pinnedMessages.length > 0 && (
+        <div className="pinned-section">
+          <h4>Pinned Messages</h4>
+          {pinnedMessages.map((message, index) => (
+            <div
+              className={`message pinned ${
+                message.senderId === currUser.uid ? "own" : ""
+              }`}
+              key={`pinned-${index}`}
+              onClick={() => scrollToMessage(message.id)}
+            >
+              <div className="texts">
+                {message.imageUrl ? (
+                  <img src={message.imageUrl} alt="Pinned" className="pinned-image" />
+                ) : (
+                  <p>{message.text}</p>
+                )}
+                <span>
+                  {new Date(message.timestamp).toLocaleDateString()}{" "}
+                  {new Date(message.timestamp).toLocaleTimeString()}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="center" ref={chatContainerRef} onScroll={handleScroll}>
         {messages?.map((message, index) => (
           <div
@@ -236,6 +284,7 @@ const Chat = ({ friend }) => {
               message.senderId === currUser.uid ? "own" : ""
             }`}
             key={index}
+            ref={(el) => (messageRefs.current[message.id] = el)}
             onClick={(e) => handleLeftClick(e, message.id)}
           >
             {message.senderId !== currUser.uid && (
@@ -250,6 +299,7 @@ const Chat = ({ friend }) => {
                   value={editMessageText}
                   onChange={(e) => setEditMessageText(e.target.value)}
                   onBlur={handleUpdateMessage}
+                  onKeyDown={handleEditKeyDown}
                 />
               ) : (
                 <p>
@@ -294,6 +344,12 @@ const Chat = ({ friend }) => {
                           >
                             Edit
                           </button>
+                          <button
+                            className="pin-button"
+                            onClick={() => handlePin(message)}
+                          >
+                            {pinnedMessages.some((pinned) => pinned.id === message.id) ? "Unpin" : "Pin"}
+                          </button>
                         </>
                       )}
                     </div>
@@ -303,8 +359,8 @@ const Chat = ({ friend }) => {
           </div>
         ))}
       </div>
+
       <div className="typing-status">
-        {/* <span>{friend.username}</span> */}
         {typingStatus?.isTyping &&
           typingStatus.typistUsername === friend.username && (
             <div className="typing-indicator">
@@ -317,6 +373,7 @@ const Chat = ({ friend }) => {
             </div>
           )}
       </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();

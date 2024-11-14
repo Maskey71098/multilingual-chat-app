@@ -23,6 +23,7 @@ import {
   faLock,
   faGear,
   faPlus,
+  faShare,
   faPhotoFilm,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -41,7 +42,8 @@ const App = () => {
     faPlus,
     faGear,
     faPhotoFilm,
-    faLock
+    faLock,
+    faShare
   );
 
   useEffect(() => {
