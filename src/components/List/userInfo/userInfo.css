@@ -28,7 +28,8 @@
 
 .userInfo .icons {
   display: flex;
-  gap: 20px;
+  gap: 15px;
+  margin-left: 10px;
 }
 
 .userInfo .icons img {
